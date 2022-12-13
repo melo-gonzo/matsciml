@@ -7,4 +7,5 @@ data:
     train_path: "ocpmodels/datasets/dev-is2re-dgl"
     dataset_class: ocpmodels.datasets.IS2REDataset
     batch_size: 1
+    sample_size: 32
     num_workers: 0

@@ -412,7 +412,7 @@ class PointCloudDataset(Dataset):
         output_data = {
             "pc_features": pc_features,
             "pos": pc_pos,
-            "sizes": len(substrate_idx),  # the size of the point cloud
+            "sizes": total_num,
         }
         if "force" in graph.ndata.keys():
             output_data["force"] = graph.ndata["force"][substrate_indices].squeeze()
@@ -481,7 +481,6 @@ class PointCloudDataset(Dataset):
                 # iterate over samples, and copy of data to zero-padded tensors
                 for index, sample in enumerate(batch):
                     lengths = sample[key].shape
-                    import pdb; pdb.set_trace()
                     batched_data[index, : lengths[0], : lengths[1]] = sample[key][:, :]
                     collate_mask[index, : lengths[0]] = True
                 output_dict[key] = batched_data
