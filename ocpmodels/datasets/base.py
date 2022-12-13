@@ -394,20 +394,24 @@ class PointCloudDataset(Dataset):
         # point cloud features as symmetric one-hot encodings
         # shape should be [natom_centers, neighbors, natom_types * 2]
         pc_features = torch.concat([plus, minus], axis=-1)
+        # for the reduced dimensionality, we will average over the atom centers
+        # so that the point cloud features are just averaged encodings
+        pc_features = pc_features.mean(0)
         # shift coordinates according to their atom centers
         # shape should be [natom_centers, neighbors, 3]
-        pc_pos = (
-            graph.ndata["pos"][substrate_indices][None, :]
-            - graph.ndata["pos"][mol_idx][:, None]
-        )
+        pc_pos = graph.ndata["pos"][substrate_indices, :]
+        atomic_numbers = graph.ndata["atomic_numbers"][substrate_indices]
+        total_mass = atomic_numbers.sum()
+        # broadcasting [num_nodes, 3] * [num_nodes, 1]
+        center_of_mass = (pc_pos * atomic_numbers.unsqueeze(-1)).sum(0) / total_mass
+        # subtract off the center of mass for point cloud
+        pc_pos -= center_of_mass
 
         # now we start getting the data out
         output_data = {
             "pc_features": pc_features,
             "pos": pc_pos,
             "sizes": len(substrate_idx),  # the size of the point cloud
-            "nneighbors": len(dest_types),
-            "ncenters": len(source_types),
         }
         if "force" in graph.ndata.keys():
             output_data["force"] = graph.ndata["force"][substrate_indices].squeeze()
@@ -459,10 +463,7 @@ class PointCloudDataset(Dataset):
                     result = torch.as_tensor(data)
                 output_dict[key] = result
         # these keys are special because we have to pad to match the number of point clouds
-        max_centers, max_neighbors = (
-            output_dict["ncenters"].max().item(),
-            output_dict["nneighbors"].max().item(),
-        )
+        max_centers = output_dict["sizes"].max().item()
         batch_size = len(batch)
         for key in pad_keys:
             # force doesn't need to be padded
@@ -472,14 +473,15 @@ class PointCloudDataset(Dataset):
                 feat_dim = example.size(-1)
                 # preallocate zeros tensor to hold everything
                 batched_data = torch.zeros(
-                    (batch_size, max_centers, max_neighbors, feat_dim),
+                    (batch_size, max_centers, feat_dim),
                     dtype=example.dtype,
                 )
+                collate_mask = torch.zeros(batch_size, max_centers, dtype=bool)
                 # iterate over samples, and copy of data to zero-padded tensors
                 for index, sample in enumerate(batch):
                     lengths = sample[key].shape
-                    batched_data[
-                        index, : lengths[0], : lengths[1], : lengths[2]
-                    ] = sample[key][:, :, :]
+                    batched_data[index, : lengths[0], : lengths[1]] = sample[key][:, :]
+                    collate_mask[index, : lengths[0]] = True
                 output_dict[key] = batched_data
+                output_dict["collate_mask"] = collate_mask
         return output_dict
