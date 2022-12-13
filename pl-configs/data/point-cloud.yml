@@ -4,7 +4,8 @@
 data:
   class_path: PointCloudDataModule
   init_args:
-    train_path: "ocpmodels/datasets/dev-is2re-dgl"
+    train_path: "../data/dev-is2re-10k"
+    val_path: "../data/dev-is2re-10k-val"
     dataset_class: ocpmodels.datasets.IS2REDataset
     batch_size: 1
     sample_size: 32
