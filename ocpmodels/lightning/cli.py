@@ -41,4 +41,4 @@ DATAMODULE_REGISTRY.register_classes(data_utils, pl.LightningDataModule)
 
 
 if __name__ == "__main__":
-    cli = LightningCLI()
+    cli = LightningCLI(save_config_overwrite=True)

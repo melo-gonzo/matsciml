@@ -4,7 +4,7 @@
 data:
   class_path: PointCloudDataModule
   init_args:
-    train_path: "data/dev-min"
+    train_path: "ocpmodels/datasets/dev-min"
     dataset_class: ocpmodels.datasets.S2EFDataset
-    batch_size: 8
+    batch_size: 1
     num_workers: 0
