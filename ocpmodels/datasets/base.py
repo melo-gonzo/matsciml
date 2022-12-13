@@ -355,6 +355,7 @@ class PointCloudDataset(Dataset):
         graph = data.get("graph")
         # compute point cloud from KNN - TODO try without KNN once
         knn_graph = graph  # self._knn(graph.ndata["pos"])
+        # knn_graph = self._knn(graph.ndata["pos"])
         (u, v) = knn_graph.edges()
         # # refer to the original graph to slice out data
         tags, nodes = graph.ndata["tags"], graph.nodes()
@@ -480,6 +481,7 @@ class PointCloudDataset(Dataset):
                 # iterate over samples, and copy of data to zero-padded tensors
                 for index, sample in enumerate(batch):
                     lengths = sample[key].shape
+                    import pdb; pdb.set_trace()
                     batched_data[index, : lengths[0], : lengths[1]] = sample[key][:, :]
                     collate_mask[index, : lengths[0]] = True
                 output_dict[key] = batched_data

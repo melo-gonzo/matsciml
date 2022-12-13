@@ -190,26 +190,27 @@ class GalaPotential(AbstractEnergyModel):
     def __init__(
         self,
         D_in,
-        hidden_dim=32,
-        depth=2,
+        hidden_dim=64,
+        depth=5,
         dilation=2.0,
         residual=True,
         nonlinearities=True,
         merge_fun="mean",
         join_fun="mean",
         invariant_mode="single",
+        covariant_mode="full",
+        include_normalized_products=False,
         rank=2,
         invar_value_normalization=None,
+        eqvar_value_normalization=None,
         value_normalization=None,
         score_normalization=None,
         block_normalization=None,
-        pc_size=16,
-        pc_mini_batch=50,
+        equivariant_attention=True,
+
     ):
         super().__init__()
-
-        self.pc_size = pc_size
-        self.pc_mini_batch = pc_mini_batch
+        self.equivariant_attention = equivariant_attention
         self.D_in = D_in
         self.hidden_dim = hidden_dim
         self.depth = depth
@@ -218,21 +219,31 @@ class GalaPotential(AbstractEnergyModel):
         self.nonlinearities = nonlinearities
         self.rank = rank
         self.invariant_mode = invariant_mode
+        self.covariant_mode = covariant_mode
+        self.include_normalized_products = include_normalized_products
         self.GAANet_kwargs = dict(
-            merge_fun=merge_fun, join_fun=join_fun, invariant_mode=invariant_mode
+            merge_fun=merge_fun,
+            join_fun=join_fun,
+            invariant_mode=invariant_mode,
+            covariant_mode=covariant_mode,
+            include_normalized_products=include_normalized_products,
         )
 
         self.invar_value_normalization = invar_value_normalization
+        self.eqvar_value_normalization = eqvar_value_normalization
         self.value_normalization = value_normalization
         self.score_normalization = score_normalization
         self.block_normalization = block_normalization
 
         self.vec2mv = gala.Vector2Multivector()
-        self.up_project = torch.nn.Linear(2 * D_in, self.hidden_dim)
+        # self.up_project = torch.nn.Linear(2 * D_in, self.hidden_dim)
+        self.up_project = torch.nn.Linear(D_in, self.hidden_dim)
         self.final_mlp = self.make_value_net(self.hidden_dim)
         self.energy_projection = torch.nn.Linear(self.hidden_dim, 1, bias=False)
 
         self.make_attention_nets()
+
+        self.int_norm = LayerNorm()
 
         self.nonlin_mlps = []
         if self.nonlinearities:
@@ -251,6 +262,15 @@ class GalaPotential(AbstractEnergyModel):
                 )
             )
 
+        self.eqvar_norm_layers = torch.nn.ModuleList([])
+        if self.equivariant_attention:
+            for _ in range(self.depth):
+                self.eqvar_norm_layers.extend(
+                    self._get_normalization_layers(
+                        self.eqvar_value_normalization, self.hidden_dim
+                    )
+                )
+
     def make_attention_nets(self):
         D_in = lambda i: 1 if (i == self.depth and self.rank == 1) else 2
         self.score_nets = torch.nn.ModuleList([])
@@ -263,34 +283,38 @@ class GalaPotential(AbstractEnergyModel):
             reduce = i == self.depth
             rank = max(2, self.rank) if not reduce else self.rank
 
-            # rotation-equivariant (multivector-producing) networks
-            self.score_nets.append(self.make_score_net())
-            self.value_nets.append(
-                self.make_value_net(
-                    gala.Multivector2MultivectorAttention.get_invariant_dims(
-                        self.rank, self.invariant_mode
+
+            if self.equivariant_attention:
+                # rotation-equivariant (multivector-producing) networks
+                self.score_nets.append(self.make_score_net())
+                self.value_nets.append(
+                    self.make_value_net(
+                        gala.Multivector2MultivectorAttention.get_invariant_dims(
+                            self.rank, self.invariant_mode, include_normalized_products = self.include_normalized_products,
+                        )
                     )
                 )
-            )
-            self.scale_nets.append(self.make_score_net())
-            self.eqvar_att_nets.append(
-                gala.Multivector2MultivectorAttention(
-                    self.hidden_dim,
-                    self.score_nets[-1],
-                    self.value_nets[-1],
-                    self.scale_nets[-1],
-                    reduce=False,
-                    rank=rank,
-                    **self.GAANet_kwargs
+                self.scale_nets.append(self.make_score_net())
+                self.eqvar_att_nets.append(
+                    gala.Multivector2MultivectorAttention(
+                        self.hidden_dim,
+                        self.score_nets[-1],
+                        self.value_nets[-1],
+                        self.scale_nets[-1],
+                        reduce=False,
+                        rank=rank,
+                        **self.GAANet_kwargs
+                    )
                 )
-            )
 
             # rotation-invariant (node value-producing) networks
             self.score_nets.append(self.make_score_net())
             self.value_nets.append(
                 self.make_value_net(
                     gala.MultivectorAttention.get_invariant_dims(
-                        self.rank, self.invariant_mode
+                        self.rank,
+                        self.invariant_mode,
+                        include_normalized_products=self.include_normalized_products,
                     )
                 )
             )
@@ -310,6 +334,8 @@ class GalaPotential(AbstractEnergyModel):
             return []
         elif norm == "momentum":
             return [MomentumNorm(n_dim)]
+        elif norm == "momentum_layer":
+            return [gala.MomentumLayerNormalization()]
         elif norm == "layer":
             return [LayerNorm()]
         else:
@@ -359,56 +385,32 @@ class GalaPotential(AbstractEnergyModel):
         positions: torch.Tensor,
     ) -> torch.Tensor:
 
-        system_size = inputs.shape[0]
+        _out = self._forward(inputs, positions)
 
-        out_tens = torch.zeros(1, 1).to(inputs.device)
-
-        for ii in range(int(math.ceil(system_size / self.pc_mini_batch))):
-
-            low_idx = self.pc_mini_batch * ii
-            high_idx = min(self.pc_mini_batch * (ii + 1), system_size)
-
-            mini_batch_input = inputs[low_idx:high_idx]
-            mini_batch_positions = positions[low_idx:high_idx]
-
-            _out = self._forward(mini_batch_input, mini_batch_positions)
-
-            out_tens += torch.sum(_out)
+        out_tens = torch.mean(_out, axis=1)
 
         return out_tens
 
     def _forward(self, inputs, positions):
 
-        (r, v) = (positions, inputs)
-        r = torch.as_tensor(r)
+        positions_2 = torch.div(positions, 1)
+
+        (r, v) = (positions_2, inputs)
+        r_pos = torch.as_tensor(r)
         v = torch.as_tensor(v)
 
-        # Rewrite this to have a neighbor list approach - point cloud around each individual point + the catalyst molecule
-        # above make up a point that replaces "last_r" and "last"
-        # Loop through graph - pull out neighbors for each individual atom , augment each local point cloud with catalyst molecule
-        # batch all of these together
-
-        neighbor_rij = r[..., None, :, :] - r[..., :, None, :]
-        neighbor_rij = self.vec2mv(neighbor_rij)
-        vplus = v[..., None, :, :] + v[..., :, None, :]
-        vminus = v[..., None, :, :] - v[..., :, None, :]
-        neighbor_vij = torch.cat([vplus, vminus], axis=-1)
-
-        last_r = neighbor_rij
-        last = self.up_project(neighbor_vij)
+        last_r_mv = self.vec2mv(r_pos)
+        last_r = last_r_mv
+        last = self.up_project(v)
 
         for i in range(self.depth + 1):
             residual = last
             residual_r = last_r
 
-            last_r = self.eqvar_att_nets[i]((last_r, last))
-
-            torch.cuda.empty_cache()
+            if self.equivariant_attention:
+                last_r = self.eqvar_att_nets[i]((last_r, last))
 
             last = self.invar_att_nets[i]((last_r, last))
-
-            torch.cuda.empty_cache()
-
             if self.nonlinearities:
                 last = self.nonlin_mlps[i](last)
 
@@ -418,19 +420,24 @@ class GalaPotential(AbstractEnergyModel):
             if self.block_norm_layers:
                 last = self.block_norm_layers[i](last)
 
-            torch.cuda.empty_cache()
 
-            if self.residual:
+            # Apply Layer Norm (Momentum) to last_r either at 273
+            if self.equivariant_attention:
+                if self.residual:
+                    last_r = last_r + residual_r
+                # Normalize with momentum here
+                if i < len(self.eqvar_norm_layers):
+                    last_r = self.eqvar_norm_layers[i](last_r)
+
+  
+            if self.residual and self.equivariant_attention:
                 last_r = last_r + residual_r
-            last_r = last_r + neighbor_rij
-
-            torch.cuda.empty_cache()
+                # Normalize with momentum here
 
         last = self.final_mlp(last)
         # Sum over the neighborhood axis needed when doing neighborhood construction
-        last = torch.sum(last, -2)
+        # last = torch.sum(last, -2)
         last = self.energy_projection(last)
 
-        torch.cuda.empty_cache()
 
         return last
