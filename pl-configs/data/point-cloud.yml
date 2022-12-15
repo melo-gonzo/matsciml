@@ -4,9 +4,11 @@
 data:
   class_path: PointCloudDataModule
   init_args:
-    train_path: /datasets-alt/open-catalyst/dgl_is2re/is2re/10k/train/
-    val_path: /datasets-alt/open-catalyst/dgl_is2re/is2re/all/val_id/
-    dataset_class: ocpmodels.datasets.IS2REDataset
-    batch_size: 16
-    sample_size: 32
+    # train_path: /datasets-alt/open-catalyst/dgl_is2re/is2re/10k/train/
+    # val_path: /datasets-alt/open-catalyst/dgl_is2re/is2re/all/val_id/
+    train_path: ../data/dev-10k
+    val_path: ../data/dev-10k-val
+    dataset_class: ocpmodels.datasets.S2EFDataset
+    batch_size: 1
+    # sample_size: 32
     # num_workers: 0

@@ -468,21 +468,21 @@ class PointCloudDataset(Dataset):
         batch_size = len(batch)
         for key in pad_keys:
             # force doesn't need to be padded
-            if key != "force":
-                # get the last dimension of the feature
-                example = batch[0][key]
-                feat_dim = example.size(-1)
-                # preallocate zeros tensor to hold everything
-                batched_data = torch.zeros(
-                    (batch_size, max_centers, feat_dim),
-                    dtype=example.dtype,
-                )
-                collate_mask = torch.zeros(batch_size, max_centers, dtype=bool)
-                # iterate over samples, and copy of data to zero-padded tensors
-                for index, sample in enumerate(batch):
-                    lengths = sample[key].shape
-                    batched_data[index, : lengths[0], : lengths[1]] = sample[key][:, :]
-                    collate_mask[index, : lengths[0]] = True
-                output_dict[key] = batched_data
-                output_dict["collate_mask"] = collate_mask
+            # if key != "forces":
+            # get the last dimension of the feature
+            example = batch[0][key]
+            feat_dim = example.size(-1)
+            # preallocate zeros tensor to hold everything
+            batched_data = torch.zeros(
+                (batch_size, max_centers, feat_dim),
+                dtype=example.dtype,
+            )
+            collate_mask = torch.zeros(batch_size, max_centers, dtype=bool)
+            # iterate over samples, and copy of data to zero-padded tensors
+            for index, sample in enumerate(batch):
+                lengths = sample[key].shape
+                batched_data[index, : lengths[0], : lengths[1]] = sample[key][:, :]
+                collate_mask[index, : lengths[0]] = True
+            output_dict[key] = batched_data
+            output_dict["collate_mask"] = collate_mask
         return output_dict

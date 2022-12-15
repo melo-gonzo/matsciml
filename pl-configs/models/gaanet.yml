@@ -2,7 +2,7 @@
 # # SPDX-License-Identifier: MIT License
 
 model:
-  class_path: IS2REPointCloudModule
+  class_path: S2EFPointCloudModule
   init_args:
     gnn:
       class_path: ocpmodels.models.GalaPotential
@@ -25,10 +25,10 @@ model:
         value_normalization: layer
         score_normalization: layer
         block_normalization: layer
-        equivariant_attention: True,
+        equivariant_attention: True
 #        pc_mini_batch: 8
 #        pc_size: 30
-#    regress_forces: True
+    regress_forces: True
     normalize_kwargs:
       target_mean: -0.7554450631141663
       target_std: 2.887317180633545
