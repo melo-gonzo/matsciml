@@ -4,10 +4,10 @@
 trainer:
   accelerator: "gpu"
   # min_epochs: 30
-  # max_epochs: 300
-  max_steps: 5
-  devices: 8
-  strategy: ddp
+  # max_epochs: 3
+  max_steps: 50
+  devices: 1
+  # strategy: ddp
   # accumulate_grad_batches: 64
   log_every_n_steps: 100
   logger:
@@ -15,4 +15,4 @@ trainer:
       init_args:
         save_dir: "matsciml-logs"
         name: "training-logs"
-#seed_everything: 6
+seed_everything: 6

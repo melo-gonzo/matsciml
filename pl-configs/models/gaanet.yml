@@ -25,7 +25,8 @@ model:
         value_normalization: layer
         score_normalization: layer
         block_normalization: layer
-        equivariant_attention: True
+        equivariant_attention: False
+        tied_attention: True
 #        pc_mini_batch: 8
 #        pc_size: 30
     regress_forces: True

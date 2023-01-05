@@ -10,8 +10,7 @@ from ocpmodels.models.base import AbstractEnergyModel
 from dgl.nn.pytorch.factory import KNNGraph
 import dgl
 
-from .gaanet_model import MLP, MomentumNorm, LayerNorm
-
+from .gaanet_model import MLP, MomentumNorm, LayerNorm, TiedMultivectorAttention
 import geometric_algebra_attention.pytorch as gala
 
 
@@ -42,10 +41,12 @@ class GAANetVectorRegressor(AbstractEnergyModel):
         score_normalization=None,
         block_normalization=None,
         equivariant_attention=True,
+        tied_attention=False,
     ):
         super().__init__()
 
         self.equivariant_attention = equivariant_attention
+        self.tied_attention = tied_attention
         self.D_in = D_in
         self.hidden_dim = hidden_dim
         self.depth = depth
@@ -207,9 +208,10 @@ class GalaPotential(AbstractEnergyModel):
         score_normalization=None,
         block_normalization=None,
         equivariant_attention=True,
-
+        tied_attention=False,
     ):
         super().__init__()
+        self.tied_attention = tied_attention
         self.equivariant_attention = equivariant_attention
         self.D_in = D_in
         self.hidden_dim = hidden_dim
@@ -278,13 +280,15 @@ class GalaPotential(AbstractEnergyModel):
         self.scale_nets = torch.nn.ModuleList([])
         self.eqvar_att_nets = torch.nn.ModuleList([])
         self.invar_att_nets = torch.nn.ModuleList([])
+        if self.tied_attention:
+            self.tied_att_nets = torch.nn.ModuleList([])
 
         for i in range(self.depth + 1):
             reduce = i == self.depth
             rank = max(2, self.rank) if not reduce else self.rank
 
 
-            if self.equivariant_attention:
+            if self.equivariant_attention or self.tied_attention:
                 # rotation-equivariant (multivector-producing) networks
                 self.score_nets.append(self.make_score_net())
                 self.value_nets.append(
@@ -295,17 +299,18 @@ class GalaPotential(AbstractEnergyModel):
                     )
                 )
                 self.scale_nets.append(self.make_score_net())
-                self.eqvar_att_nets.append(
-                    gala.Multivector2MultivectorAttention(
-                        self.hidden_dim,
-                        self.score_nets[-1],
-                        self.value_nets[-1],
-                        self.scale_nets[-1],
-                        reduce=False,
-                        rank=rank,
-                        **self.GAANet_kwargs
-                    )
-                )
+                if self.equivariant_attention:
+                    self.eqvar_att_nets.append(
+                        gala.Multivector2MultivectorAttention(
+                            self.hidden_dim,
+                            self.score_nets[-1],
+                            self.value_nets[-1],
+                            self.scale_nets[-1],
+                            reduce=False,
+                            rank=rank,
+                            **self.GAANet_kwargs
+                        )
+                    )                    
 
             # rotation-invariant (node value-producing) networks
             self.score_nets.append(self.make_score_net())
@@ -318,16 +323,30 @@ class GalaPotential(AbstractEnergyModel):
                     )
                 )
             )
-            self.invar_att_nets.append(
-                gala.MultivectorAttention(
-                    self.hidden_dim,
-                    self.score_nets[-1],
-                    self.value_nets[-1],
-                    reduce=reduce,
-                    rank=rank,
-                    **self.GAANet_kwargs
+            if self.tied_attention:
+                self.tied_att_nets.append(
+                    TiedMultivectorAttention(
+                        self.hidden_dim,
+                        self.score_nets[-1],
+                        self.value_nets[-1],
+                        self.scale_nets[-1],
+                        reduce=reduce,
+                        rank=rank,
+                        **self.GAANet_kwargs
+                    )
                 )
-            )
+            else:
+                self.invar_att_nets.append(
+                    gala.MultivectorAttention(
+                        self.hidden_dim,
+                        self.score_nets[-1],
+                        self.value_nets[-1],
+                        reduce=reduce,
+                        rank=rank,
+                        **self.GAANet_kwargs
+                    )
+                )
+   
 
     def _get_normalization_layers(self, norm, n_dim):
         if not norm:
@@ -410,9 +429,14 @@ class GalaPotential(AbstractEnergyModel):
             if self.equivariant_attention:
                 last_r = self.eqvar_att_nets[i]((last_r, last))
 
-            last = self.invar_att_nets[i]((last_r, last))
+            if self.tied_attention:
+                last = self.tied_att_nets[i]((last_r, last))
+            else:
+                last = self.invar_att_nets[i]((last_r, last))
+
+            import pdb; pdb.set_trace()
             if self.nonlinearities:
-                last = self.nonlin_mlps[i](last)
+                last = self.nonlin_mlps[i](last[-1])
 
             if self.residual and i < self.depth:
                 last = last + residual
