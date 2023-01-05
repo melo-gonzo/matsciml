@@ -224,7 +224,6 @@ class TiedMultivectorAttention(
             scores, new_covar_values, old_shape
         )
         output = (covar_output, invar_output)
-        import pdb; pdb.set_trace()
         return self.OutputType(
             attention,
             output,
