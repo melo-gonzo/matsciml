@@ -405,7 +405,6 @@ class GalaPotential(AbstractEnergyModel):
     ) -> torch.Tensor:
 
         _out = self._forward(inputs, positions)
-
         out_tens = torch.mean(_out, axis=1)
 
         return out_tens
@@ -429,14 +428,13 @@ class GalaPotential(AbstractEnergyModel):
             if self.equivariant_attention:
                 last_r = self.eqvar_att_nets[i]((last_r, last))
 
-            import pdb; pdb.set_trace()
             if self.tied_attention:
                 x_last, last = self.tied_att_nets[i]((last_r, last))
             else:
                 last = self.invar_att_nets[i]((last_r, last))
 
             if self.nonlinearities:
-                last = self.nonlin_mlps[i](last[-1])
+                last = self.nonlin_mlps[i](last)
 
             if self.residual and i < self.depth:
                 last = last + residual

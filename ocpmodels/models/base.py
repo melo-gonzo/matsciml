@@ -112,6 +112,8 @@ def rnn_force_train_mode(module: nn.Module) -> None:
             module.train()
     except RuntimeError:
         pass
+    except AssertionError:
+        pass
 
 
 class BaseModel(nn.Module):
