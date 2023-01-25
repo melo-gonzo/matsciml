@@ -6,7 +6,8 @@ import pytorch_lightning as pl
 from ocpmodels.datasets import s2ef_devset, is2re_devset, S2EFDataset
 from ocpmodels.models import S2EFPointCloudModule, GalaPotential
 from ocpmodels.lightning.data_utils import PointCloudDataModule
-
+from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.callbacks import ModelCheckpoint, ModelSummary
 
 BATCH_SIZE = 1
 NUM_WORKERS = 0
@@ -43,13 +44,26 @@ model = S2EFPointCloudModule(gnn, regress_forces=REGRESS_FORCES, lr=1e-3, gamma=
 
 data_module = PointCloudDataModule(
     train_path="./ocpmodels/datasets/dev-min",
-    # val_path="./ocpmodels/datasets/dev-min",
     batch_size=BATCH_SIZE,
     num_workers=NUM_WORKERS,
     dataset_class=S2EFDataset
 )
 
 
-trainer = pl.Trainer(accelerator="cpu", max_steps=MAX_STEPS)
+# default is TensorBoardLogger, but here we log to CSV for illustrative
+# purposes; see link below for list of supported loggers:
+# https://pytorch-lightning.readthedocs.io/en/1.6.3/extensions/logging.html
+logger = CSVLogger("lightning_logs", name="GALA-Habana")
+
+# callbacks are passed as a list into `Trainer`; see link below for API
+# https://pytorch-lightning.readthedocs.io/en/1.6.3/extensions/callbacks.html
+ckpt_callback = ModelCheckpoint("model_checkpoints", save_top_k=5, monitor="train_loss")
+
+trainer = pl.Trainer(
+    accelerator="cpu",
+    logger=logger,
+    callbacks=[ckpt_callback, ModelSummary(max_depth=2)],
+    max_steps=MAX_STEPS,
+    log_every_n_steps=1)
 
 trainer.fit(model, datamodule=data_module)
