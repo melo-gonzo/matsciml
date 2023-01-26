@@ -53,7 +53,7 @@ data_module = PointCloudDataModule(
 # default is TensorBoardLogger, but here we log to CSV for illustrative
 # purposes; see link below for list of supported loggers:
 # https://pytorch-lightning.readthedocs.io/en/1.6.3/extensions/logging.html
-logger = CSVLogger("lightning_logs", name="GALA-Habana")
+logger = CSVLogger("./lightning_logs")
 
 # callbacks are passed as a list into `Trainer`; see link below for API
 # https://pytorch-lightning.readthedocs.io/en/1.6.3/extensions/callbacks.html
