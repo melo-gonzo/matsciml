@@ -53,11 +53,11 @@ data_module = PointCloudDataModule(
 # default is TensorBoardLogger, but here we log to CSV for illustrative
 # purposes; see link below for list of supported loggers:
 # https://pytorch-lightning.readthedocs.io/en/1.6.3/extensions/logging.html
-logger = CSVLogger("./lightning_logs")
+logger = CSVLogger("lightning_logs")
 
 # callbacks are passed as a list into `Trainer`; see link below for API
 # https://pytorch-lightning.readthedocs.io/en/1.6.3/extensions/callbacks.html
-ckpt_callback = ModelCheckpoint("model_checkpoints", save_top_k=5, monitor="train_total")
+# ckpt_callback = ModelCheckpoint("model_checkpoints", save_top_k=5, monitor="train_total")
 
 trainer = pl.Trainer(
     accelerator="cpu",
