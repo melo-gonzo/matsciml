@@ -8,6 +8,7 @@ from ocpmodels.models import S2EFPointCloudModule, GalaPotential
 from ocpmodels.lightning.data_utils import PointCloudDataModule
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, ModelSummary
+from callbacks.timing_callback import TimingCallback
 
 BATCH_SIZE = 1
 NUM_WORKERS = 0
@@ -58,11 +59,13 @@ logger = CSVLogger("lightning_logs")
 # callbacks are passed as a list into `Trainer`; see link below for API
 # https://pytorch-lightning.readthedocs.io/en/1.6.3/extensions/callbacks.html
 ckpt_callback = ModelCheckpoint("model_checkpoints", save_top_k=5, monitor="train_total")
+timing_callback = TimingCallback()
+
 
 trainer = pl.Trainer(
     accelerator="cpu",
     logger=logger,
-    callbacks=[ckpt_callback, ModelSummary(max_depth=2)],
+    callbacks=[ckpt_callback, ModelSummary(max_depth=2), timing_callback],
     max_steps=MAX_STEPS,
     log_every_n_steps=1)
 
