@@ -10,7 +10,7 @@ from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, ModelSummary
 from callbacks.timing_callback import TimingCallback
 
-BATCH_SIZE = 1
+BATCH_SIZE = 2
 NUM_WORKERS = 0
 REGRESS_FORCES = True
 
@@ -63,7 +63,8 @@ timing_callback = TimingCallback()
 
 
 trainer = pl.Trainer(
-    accelerator="cpu",
+    accelerator="hba",
+    devices=1,
     logger=logger,
     callbacks=[ckpt_callback, ModelSummary(max_depth=2), timing_callback],
     max_steps=MAX_STEPS,
