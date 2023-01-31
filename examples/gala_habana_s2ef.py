@@ -63,7 +63,7 @@ timing_callback = TimingCallback()
 
 
 trainer = pl.Trainer(
-    accelerator="hba",
+    accelerator="hpu",
     devices=1,
     logger=logger,
     callbacks=[ckpt_callback, ModelSummary(max_depth=2), timing_callback],

@@ -10,10 +10,10 @@ from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, ModelSummary
 from callbacks.timing_callback import TimingCallback
 
-BATCH_SIZE = 4
-NUM_WORKERS = 0
+BATCH_SIZE = 32
+NUM_WORKERS = 48
 
-MAX_STEPS = 5
+MAX_STEPS = 50
 
 
 # default model configuration for DimeNet++
@@ -62,7 +62,7 @@ timing_callback = TimingCallback()
 
 
 trainer = pl.Trainer(
-    accelerator="hba",
+    accelerator="hpu",
     devices=1,
     logger=logger,
     callbacks=[ckpt_callback, ModelSummary(max_depth=2), timing_callback],
