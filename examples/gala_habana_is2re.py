@@ -8,6 +8,10 @@ from ocpmodels.models import IS2REPointCloudModule, GalaPotential
 from ocpmodels.lightning.data_utils import PointCloudDataModule
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, ModelSummary
+try:
+    from pytorch_lightning.profiler import AdvancedProfiler
+except: 
+    from pytorch_lightning.profilers import AdvancedProfiler
 from callbacks.timing_callback import TimingCallback
 
 BATCH_SIZE = 32
@@ -43,7 +47,8 @@ print('IS2RE Training')
 model = IS2REPointCloudModule(gnn, lr=1e-3, gamma=0.1)
 
 data_module = PointCloudDataModule(
-    train_path="./ocpmodels/datasets/dev-is2re-dgl",
+    # train_path="ocpmodels/datasets/dev-is2re-dgl",
+    train_path="/datasets-alt/open-catalyst/dgl_is2re/is2re/all/train/",
     batch_size=BATCH_SIZE,
     num_workers=NUM_WORKERS,
     dataset_class=IS2REDataset
@@ -61,12 +66,16 @@ ckpt_callback = ModelCheckpoint("model_checkpoints", save_top_k=5, monitor="trai
 timing_callback = TimingCallback()
 
 
+
+profiler = AdvancedProfiler(dirpath=".", filename="perf_logs")
+
 trainer = pl.Trainer(
     accelerator="hpu",
     devices=1,
     logger=logger,
     callbacks=[ckpt_callback, ModelSummary(max_depth=2), timing_callback],
     max_steps=MAX_STEPS,
-    log_every_n_steps=1)
+    log_every_n_steps=1,
+    profiler=profiler)
 
 trainer.fit(model, datamodule=data_module)
