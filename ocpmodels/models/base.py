@@ -468,6 +468,9 @@ class IS2RELitModule(OCPLitModule):
         # normalize the targets before loss computation
         true_energies = self.normalizers["target"].norm(true_energies)
         # compute energy and force losses
+        # import pdb; pdb.set_trace()
+        # MAE loss: 
+        # abs(pred_energy-true_energies).mean()
         energy_loss = self.energy_loss(pred_energy, true_energies)
         if self._nan_check:
             if energy_loss != energy_loss:

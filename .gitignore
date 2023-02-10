@@ -8,6 +8,8 @@ experimental
 lightning_logs
 *commands*
 *kdp*
+matsciml-logs/
+model_checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
