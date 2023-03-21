@@ -798,11 +798,39 @@ class S2EFLitModule(OCPLitModule):
         outputs,
         batch: Dict[str, Union[torch.Tensor, dgl.DGLGraph]],
         batch_idx: int,
-        dataloader_idx: int,
-    ) -> None:
-        # make sure gradients are zeroed out and they don't contaminate
-        # the next batch
-        self.zero_grad()
+        dataloader_idx: int = 0,
+    ) -> Dict[str, torch.Tensor]:
+        # force gradients when running predictions
+        with dynamic_gradients_context(self.regress_forces, self.has_rnn) as grad_content:
+            input_data = self._get_inputs(batch)
+            if self.regress_forces:
+                (pred_energy, pred_force) = self(*input_data)
+                # detach from the graph
+                pred_energy, pred_force = pred_energy.detach(), pred_force.detach()
+            else:
+                pred_energy = self(*input_data)
+                # detach from the graph
+                pred_energy = pred_energy.detach()
+        ids, chunk_ids = batch.get("sid"), batch.get("fid")
+        # ids are formatted differently for force tasks
+        system_ids = [f"{i}_{j}" for i, j in zip(ids, chunk_ids)]
+        predictions = {
+            "ids": system_ids,
+            "energy": pred_energy.to(torch.float16),
+        }
+        # processing the forces is a bit more complicated because apparently
+        # only the free atoms are considered
+        if self.regress_forces:
+            graph = batch.get("graph")
+            fixed_mask = graph.ndata["fixed"] == 0
+            import pdb; pdb.set_trace()
+            # retrieve only forces corresponding to unfixed nodes
+            predictions["forces"] = pred_force[fixed_mask]
+            natoms = tuple(batch.get('natoms').cpu().numpy().astype(int))
+            chunk_split = torch.split(graph.ndata["fixed"], natoms)
+            chunk_ids = [int((len(chunk)-sum(chunk)).cpu().numpy().astype(int)) for chunk in chunk_split]
+            predictions["chunk_ids"] = chunk_ids
+        return predictions
 
 
 class S2EFPointCloudModule(S2EFLitModule):
