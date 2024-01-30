@@ -1,0 +1,15 @@
+debug:
+  accelerator: "cpu"
+  limit_train_batches: 10
+  limit_val_batches: 10
+  log_every_n_steps: 1
+  max_epochs: 2
+
+
+8gpu:
+  max_epochs: 2
+
+
+generic_experiment:
+  min_epochs: 15
+  max_epochs: 100
