@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from logging import DEBUG, getLogger
 from pathlib import Path
-from time import time
+from time import perf_counter, time
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import numpy as np
@@ -537,3 +537,90 @@ class InferenceWriter(BasePredictionWriter):
         rank = trainer.global_rank
         path = self.output_dir.joinpath(f"results_rank{rank}.pt")
         torch.save(predictions, path)
+
+
+class Timer(Callback):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def epoch_start(self, stage: str) -> None:
+        setattr(self, f"{stage}_epoch_start_time", perf_counter())
+
+    def epoch_end(self, stage: str) -> None:
+        setattr(self, f"{stage}_epoch_end_time", perf_counter())
+        runtime = getattr(self, f"{stage}_epoch_end_time") - getattr(
+            self,
+            f"{stage}_epoch_start_time",
+        )
+
+        self.log(f"timer/{stage}_epoch_time", runtime)
+
+    def batch_start(self, stage: str) -> None:
+        setattr(self, f"{stage}_batch_start_time", perf_counter())
+
+    def batch_end(self, stage: str) -> None:
+        setattr(self, f"{stage}_batch_end_time", perf_counter())
+        runtime = getattr(self, f"{stage}_batch_end_time") - getattr(
+            self,
+            f"{stage}_batch_start_time",
+        )
+        self.log(f"timer/{stage}_batch_time", runtime)
+
+    def on_fit_start(self, *args, **kwargs) -> None:
+        self.fit_start = perf_counter()
+
+    def on_fit_end(self, *args, **kwargs) -> None:
+        self.fit_end = perf_counter()
+        self.log("timer/fit_time", self.fit_end - self.fit_start)
+
+    """
+    Epoch start
+    """
+
+    def on_train_epoch_start(self, *args, **kwargs) -> None:
+        self.epoch_start("train")
+
+    def on_validation_epoch_start(self, *args, **kwargs) -> None:
+        self.epoch_start("validation")
+
+    def on_test_epoch_start(self, *args, **kwargs) -> None:
+        self.epoch_start("test")
+
+    """
+    Epoch end
+    """
+
+    def on_train_epoch_end(self, *args, **kwargs) -> None:
+        self.epoch_end("train")
+
+    def on_validation_epoch_end(self, *args, **kwargs) -> None:
+        self.epoch_end("validation")
+
+    def on_test_epoch_end(self, *args, **kwargs) -> None:
+        self.epoch_end("test")
+
+    """
+    Batch start
+    """
+
+    def on_train_batch_start(self, *args, **kwargs) -> None:
+        self.batch_start("train")
+
+    def on_validation_batch_start(self, *args, **kwargs) -> None:
+        self.batch_start("validation")
+
+    def on_test_batch_start(self, *args, **kwargs) -> None:
+        self.batch_start("test")
+
+    """
+    Batch end
+    """
+
+    def on_train_batch_end(self, batch_idx: int, *args, **kwargs) -> None:
+        self.batch_end("train")
+
+    def on_validation_batch_end(self, batch_idx: int, *args, **kwargs) -> None:
+        self.batch_end("validation")
+
+    def on_test_batch_end(self, batch_idx: int, *args, **kwargs) -> None:
+        self.batch_end("test")
