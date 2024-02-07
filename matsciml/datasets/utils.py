@@ -56,7 +56,10 @@ def concatenate_keys(
     sample = batch[0]
     batched_data = {}
     for key, value in sample.items():
-        if key not in ["target_types", "target_keys"]:
+        if key == "pbc":
+            result = [s[key] for s in batch]
+            batched_data[key] = result
+        elif key not in ["target_types", "target_keys"]:
             if isinstance(value, dict):
                 # apply function recursively on dictionaries
                 result = concatenate_keys([s[key] for s in batch])

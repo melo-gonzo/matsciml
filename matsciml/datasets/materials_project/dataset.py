@@ -240,37 +240,70 @@ class MaterialsProjectDataset(PointCloudDataset):
         """
         data: dict[str, Any] = super().data_from_key(lmdb_index, subindex)
         return_dict = {}
+        # struct = data["structure"]
+        # frac_coords = struct.lattice.get_fractional_coords(struct.cart_coords)
+        # return_dict["pbc"] = torch.Tensor(struct.lattice.matrix) #get_distance_and_image(frac_coords, frac_coords)[1]
+        # lattice_matrix = struct.lattice.matrix
+        # # Compute reciprocal lattice vectors
+        # reciprocal_lattice = np.linalg.inv(lattice_matrix).T
+
+        # # Compute lattice planes from reciprocal lattice vectors
+        # lattice_planes = np.array([[h, k, l] for h in range(-3, 4)
+        #                                         for k in range(-3, 4)
+        #                                         for l in range(-3, 4)
+        #                                         if (h != 0 or k != 0 or l != 0)])
+
+        # Filter out lattice planes with non-zero dot product with reciprocal lattice vectors
+        # valid_lattice_planes = [plane for plane in lattice_planes if np.allclose(np.dot(plane, reciprocal_lattice), 2 * np.pi)]
+        # return_dict["pbc"] = valid_lattice_planes
+        return_dict["pbc"] = torch.Tensor([1, 1, 1])
+
+        pbc = return_dict["pbc"]
+        # print(f"PBC: {pbc}\n\n\n")
+        # return_dict['structure_'] = data["structure"]
         # parse out relevant structure/lattice data
         self._parse_structure(data, return_dict)
         self._parse_symmetry(data, return_dict)
         # assume every other key are targets
-        not_targets = set(
-            ["structure", "symmetry", "fields_not_requested", "formula_pretty"]
-            + data["fields_not_requested"],
-        )
+        # not_targets = set(
+        #     ["structure", "symmetry", "fields_not_requested", "formula_pretty"]
+        # )
+        # if data.get("fields_not_requested", None) is None:
+        #     fnr = ["@class", "@module"]
+        #     not_targets.update(fnr)
+        # else:
+        #     not_targets.update(data['fields_not_requested'])
+        # print(data.keys())
         # target_keys = getattr(self, "_target_keys", None)
-        target_keys = self.target_key_list
-        # in the event we're getting data for the first time
-        if not target_keys:
-            target_keys = set(data.keys()).difference(not_targets)
-            # cache the result
-            target_keys = list(target_keys)
+        # target_keys = self.target_key_list
+        # # in the event we're getting data for the first time
+        # if not target_keys:
+        #     target_keys = #set(data.keys()).difference(not_targets)
+        #     # cache the result
+        #     target_keys = list(target_keys)
+        data["energy"] = data["corrected_total_energy"]
+        return_dict["energy"] = data["corrected_total_energy"]
+        data.pop("corrected_total_energy")
+        target_keys = ["energy", "force"]
         targets = {key: self._standardize_values(data[key]) for key in target_keys}
         return_dict["targets"] = targets
         # compress all the targets into a single tensor for convenience
         target_types = {"classification": [], "regression": []}
+
         for key in target_keys:
-            item = targets.get(key)
-            if isinstance(item, Iterable):
-                # check if the data is numeric first
-                if isinstance(item[0], (float, int)):
-                    target_types["regression"].append(key)
-            else:
-                if isinstance(item, (float, int)):
-                    target_type = (
-                        "classification" if isinstance(item, int) else "regression"
-                    )
-                    target_types[target_type].append(key)
+            # item = targets.get(key)
+            # if key in ["force", "magmom"]:
+            target_types["regression"].append(key)
+            # if isinstance(item, Iterable):
+            #     # check if the data is numeric first
+            #     if isinstance(item[0], (float, int)):
+            #         target_types["regression"].append(key)
+            # else:
+            #     if isinstance(item, (float, int)):
+            #         target_type = (
+            #             "classification" if isinstance(item, int) else "regression"
+            #         )
+            #         target_types[target_type].append(key)
         return_dict["target_types"] = target_types
         self.target_keys = target_types
         return return_dict

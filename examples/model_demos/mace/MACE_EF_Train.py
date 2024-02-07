@@ -1,21 +1,24 @@
+from __future__ import annotations
+
+import argparse
+
+import e3nn
 import pytest
+import pytorch_lightning as pl
+
+from matsciml.datasets import transforms
 
 # import sys
 # sys.path.append(".\matsciml")  #Path to matsciml directory(or matsciml installed as package )
 from matsciml.datasets.lips import LiPSDataset, lips_devset
-from matsciml.datasets import transforms
-from matsciml.models.base import MaceEnergyForceTask
+from matsciml.datasets.transforms import PointCloudToGraphTransform, UnitCellCalculator
 from matsciml.lightning.data_utils import MatSciMLDataModule
+from matsciml.models.base import MaceEnergyForceTask
+from matsciml.models.pyg.mace import data, modules, tools
 from matsciml.models.pyg.mace.modules.blocks import *
 from matsciml.models.pyg.mace.modules.models import ScaleShiftMACE
-from matsciml.models.pyg.mace import data, modules, tools
-import pytorch_lightning as pl
 from matsciml.models.pyg.mace.modules.utils import compute_mean_std_atomic_inter_energy
 from matsciml.models.pyg.mace.tools import atomic_numbers_to_indices, to_one_hot
-import e3nn
-import argparse
-
-from matsciml.datasets.transforms import PointCloudToGraphTransform
 
 # Atomic Energies table
 E0s = {
@@ -42,7 +45,6 @@ def compute_mean_std_atomic_inter_energy_and_avg_num_neighbors(
     avg_atom_inter_es_list = []
     avg_num_neighbors_list = []
     for batch in data_loader:
-
         graph = batch.get("graph")
         atomic_numbers: torch.Tensor = getattr(graph, "atomic_numbers")
         z_table = tools.get_atomic_number_table_from_zs(atomic_numbers.numpy())
@@ -50,15 +52,18 @@ def compute_mean_std_atomic_inter_energy_and_avg_num_neighbors(
         indices = atomic_numbers_to_indices(atomic_numbers, z_table=z_table)
         node_attrs = to_one_hot(
             torch.tensor(indices, dtype=torch.long).unsqueeze(-1),
-            num_classes=len(z_table),
+            num_classes=100,
         )
         node_e0 = atomic_energies_fn(node_attrs)
         graph_e0s = scatter_sum(
-            src=node_e0, index=graph.batch, dim=-1, dim_size=graph.num_graphs
+            src=node_e0,
+            index=graph.batch,
+            dim=-1,
+            dim_size=graph.num_graphs,
         )
         graph_sizes = graph.ptr[1:] - graph.ptr[:-1]
         avg_atom_inter_es_list.append(
-            (batch["energy"] - graph_e0s) / graph_sizes
+            (batch["energy"] - graph_e0s) / graph_sizes,
         )  # {[n_graphs], }
         avg_num_neighbors_list.append(graph.edge_index.numel() / len(atomic_numbers))
 
@@ -70,27 +75,47 @@ def compute_mean_std_atomic_inter_energy_and_avg_num_neighbors(
 
 
 def main(args):
-
     # Load Data
-    dm = MatSciMLDataModule.from_devset(
-        "LiPSDataset",
+    dm = MatSciMLDataModule(
+        "MaterialsProjectDataset",
+        train_path="/store/code/open-catalyst/data_lmdbs/gnome/devset",
         dset_kwargs={
-            "transforms": [PointCloudToGraphTransform("pyg", cutoff_dist=args.cutoff)]
+            "transforms": [
+                PointCloudToGraphTransform("pyg", cutoff_dist=args.cutoff),
+                UnitCellCalculator(),
+            ],
         },
+        batch_size=8,
+        num_workers=0,
     )
 
+    # dm = MatSciMLDataModule.from_devset(
+    #     "LiPSDataset",
+    #     dset_kwargs={
+    #         "transforms": [PointCloudToGraphTransform("pyg", cutoff_dist=args.cutoff)]
+    #     },
+    #     batch_size=8,
+    #     num_workers=0,
+    # )
+
     dm.setup()
-    Train_loader = dm.train_dataloader()
-    dataset_iter = iter(Train_loader)
+    train_loader = dm.train_dataloader()
+    dataset_iter = iter(train_loader)
     batch = next(dataset_iter)
 
-    atomic_numbers = torch.unique(batch["graph"]["atomic_numbers"]).numpy()
-    atomic_energies = np.array([E0s[i] for i in atomic_numbers])
+    atomic_numbers = torch.arange(0, 100)
 
-    atomic_inter_shift, atomic_inter_scale, avg_num_neighbors = (
-        compute_mean_std_atomic_inter_energy_and_avg_num_neighbors(
-            Train_loader, atomic_energies
-        )
+    # atomic_numbers = torch.unique(batch["graph"]["atomic_numbers"]).numpy()
+    # atomic_energies = np.array([E0s[i] for i in atomic_numbers])
+    atomic_energies = np.array([0.0 for _ in atomic_numbers])
+
+    (
+        atomic_inter_shift,
+        atomic_inter_scale,
+        avg_num_neighbors,
+    ) = compute_mean_std_atomic_inter_energy_and_avg_num_neighbors(
+        train_loader,
+        atomic_energies,
     )
 
     # Load Model
@@ -140,7 +165,9 @@ def main(args):
     # Start Training
 
     trainer = pl.Trainer(
-        max_epochs=args.max_epochs, log_every_n_steps=10, accelerator="cpu"
+        max_epochs=args.max_epochs,
+        log_every_n_steps=10,
+        accelerator="cpu",
     )
 
     trainer.fit(task, datamodule=dm)
@@ -151,7 +178,10 @@ if __name__ == "__main__":
     parser.add_argument("--cutoff", type=float, default=5.0, help="Neighbor cutoff")
     parser.add_argument("--Lmax", type=int, default=3, help="Spherical harmonic Lmax")
     parser.add_argument(
-        "--num_bessel", type=int, default=8, help="Bessel embeding size"
+        "--num_bessel",
+        type=int,
+        default=8,
+        help="Bessel embeding size",
     )
     parser.add_argument(
         "--num_polynomial_cutoff",
@@ -160,7 +190,10 @@ if __name__ == "__main__":
         help="Radial basis polynomial cutoff",
     )
     parser.add_argument(
-        "--num_interactions", type=int, default=2, help="No. of interaction layers"
+        "--num_interactions",
+        type=int,
+        default=2,
+        help="No. of interaction layers",
     )
     parser.add_argument(
         "--hidden_irreps",
@@ -169,7 +202,10 @@ if __name__ == "__main__":
         help="Hidden Irrep Shape",
     )
     parser.add_argument(
-        "--correlation_order", type=int, default=3, help="Correlation Order"
+        "--correlation_order",
+        type=int,
+        default=3,
+        help="Correlation Order",
     )
     parser.add_argument(
         "--MLP_irreps",
