@@ -719,7 +719,14 @@ def calculate_periodic_shifts(
         "pos": frac_coords,
     }
     # now calculate offsets based on each image for a lattice
-    return_dict["offsets"] = einsum(return_dict["images"], cell, "v i, n i j -> v j")
+    if all_images != []:
+        return_dict["offsets"] = einsum(
+            return_dict["images"],
+            cell,
+            "v i, n i j -> v j",
+        )
+    else:
+        return_dict["offsets"] = 0
     src, dst = return_dict["src_nodes"], return_dict["dst_nodes"]
     # this corresponds to distances between nodes based on unit cell images
     return_dict["unit_offsets"] = (

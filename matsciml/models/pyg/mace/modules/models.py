@@ -426,7 +426,10 @@ class ScaleShiftMACE(MACE):
             "graph" in batch
         ), f"Model {self.__class__.__name__} expects graph structures, but 'graph' key was not found in batch."
         graph = batch.get("graph")
-        pbc = batch.get("pbc")
+        pbc = batch.get(
+            "pbc",
+            [torch.Tensor([1, 1, 1])] * (len(batch["graph"]["ptr"]) - 1),
+        )
         data = {"cell": batch.get("cell"), "energy": batch.get("energy")}
 
         assert isinstance(
@@ -474,30 +477,24 @@ class ScaleShiftMACE(MACE):
         cell_k = data["cell"].reshape(b_sz, 3, 3)
         all_before = 0
         for k in range(b_sz):
-            try:
-                pbc_tensor = pbc[k] == 1
-                pbc_tuple = (
-                    pbc_tensor[0].item(),
-                    pbc_tensor[1].item(),
-                    pbc_tensor[2].item(),
-                )
-                edge_index_k, shifts_k, unit_shifts_k = get_neighborhood(
-                    pos_k[k].numpy(),
-                    cutoff=self.r_max.item(),
-                    pbc=pbc_tuple,
-                    cell=cell_k[k],
-                )
-                shifts += [torch.Tensor(shifts_k)]
-                edge_index += [
-                    (torch.Tensor(edge_index_k) + all_before).T.to(torch.int64),
-                ]
-                all_before += pos_k[k].size(0)
-                unit_shifts += [torch.Tensor(unit_shifts_k)]
-            except Exception:
-                # import pdb
-
-                # pdb.set_trace()
-                a = 1
+            pbc_tensor = pbc[k] == 1
+            pbc_tuple = (
+                pbc_tensor[0].item(),
+                pbc_tensor[1].item(),
+                pbc_tensor[2].item(),
+            )
+            edge_index_k, shifts_k, unit_shifts_k = get_neighborhood(
+                pos_k[k].cpu().numpy(),
+                cutoff=self.r_max.item(),
+                pbc=pbc_tuple,
+                cell=cell_k[k].cpu(),
+            )
+            shifts += [torch.Tensor(shifts_k)]
+            edge_index += [
+                (torch.Tensor(edge_index_k) + all_before).T.to(torch.int64),
+            ]
+            all_before += pos_k[k].size(0)
+            unit_shifts += [torch.Tensor(unit_shifts_k)]
 
         data["shifts"] = torch.concatenate(shifts)
         data["unit_shifts"] = torch.concatenate(unit_shifts)

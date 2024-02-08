@@ -3,15 +3,26 @@ from __future__ import annotations
 import argparse
 
 import e3nn
+
+# Atomic Energies table
+import mendeleev
 import pytest
 import pytorch_lightning as pl
+from mendeleev.fetch import fetch_ionization_energies
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
+from tqdm import tqdm
 
 from matsciml.datasets import transforms
 
 # import sys
 # sys.path.append(".\matsciml")  #Path to matsciml directory(or matsciml installed as package )
 from matsciml.datasets.lips import LiPSDataset, lips_devset
-from matsciml.datasets.transforms import PointCloudToGraphTransform, UnitCellCalculator
+from matsciml.datasets.transforms import (
+    PeriodicPropertiesTransform,
+    PointCloudToGraphTransform,
+)
+from matsciml.lightning.callbacks import GradientCheckCallback
 from matsciml.lightning.data_utils import MatSciMLDataModule
 from matsciml.models.base import MaceEnergyForceTask
 from matsciml.models.pyg.mace import data, modules, tools
@@ -20,83 +31,30 @@ from matsciml.models.pyg.mace.modules.models import ScaleShiftMACE
 from matsciml.models.pyg.mace.modules.utils import compute_mean_std_atomic_inter_energy
 from matsciml.models.pyg.mace.tools import atomic_numbers_to_indices, to_one_hot
 
-# Atomic Energies table
-E0s = {
-    1: -13.663181292231226,
-    3: -216.78673811801755,
-    6: -1029.2809654211628,
-    7: -1484.1187695035828,
-    8: -2042.0330099956639,
-    15: -1537.0898574856286,
-    16: -1867.8202267974733,
-}
+atomic_energies = fetch_ionization_energies(degree=list(range(1, 100))).sum(axis=1)
+atomic_energies *= -1
+atomic_energies = torch.Tensor(list(atomic_energies[:100].to_dict().values()))
 
 
 def to_numpy(t: torch.Tensor) -> np.ndarray:
     return t.cpu().detach().numpy()
 
 
-def compute_mean_std_atomic_inter_energy_and_avg_num_neighbors(
-    data_loader: torch.utils.data.DataLoader,
-    atomic_energies: np.ndarray,
-) -> Tuple[float, float]:
-    atomic_energies_fn = AtomicEnergiesBlock(atomic_energies=atomic_energies)
-
-    avg_atom_inter_es_list = []
-    avg_num_neighbors_list = []
-    for batch in data_loader:
-        graph = batch.get("graph")
-        atomic_numbers: torch.Tensor = getattr(graph, "atomic_numbers")
-        z_table = tools.get_atomic_number_table_from_zs(atomic_numbers.numpy())
-
-        indices = atomic_numbers_to_indices(atomic_numbers, z_table=z_table)
-        node_attrs = to_one_hot(
-            torch.tensor(indices, dtype=torch.long).unsqueeze(-1),
-            num_classes=100,
-        )
-        node_e0 = atomic_energies_fn(node_attrs)
-        graph_e0s = scatter_sum(
-            src=node_e0,
-            index=graph.batch,
-            dim=-1,
-            dim_size=graph.num_graphs,
-        )
-        graph_sizes = graph.ptr[1:] - graph.ptr[:-1]
-        avg_atom_inter_es_list.append(
-            (batch["energy"] - graph_e0s) / graph_sizes,
-        )  # {[n_graphs], }
-        avg_num_neighbors_list.append(graph.edge_index.numel() / len(atomic_numbers))
-
-    avg_atom_inter_es = torch.cat(avg_atom_inter_es_list)  # [total_n_graphs]
-    mean = to_numpy(torch.mean(avg_atom_inter_es)).item()
-    std = to_numpy(torch.std(avg_atom_inter_es)).item()
-    avg_num_neighbors = torch.mean(torch.Tensor(avg_num_neighbors_list))
-    return mean, std, avg_num_neighbors
-
-
 def main(args):
     # Load Data
     dm = MatSciMLDataModule(
         "MaterialsProjectDataset",
-        train_path="/store/code/open-catalyst/data_lmdbs/gnome/devset",
+        train_path="/store/code/open-catalyst/data_lmdbs/gnome/train",
+        val_split="/store/code/open-catalyst/data_lmdbs/gnome/val",
         dset_kwargs={
             "transforms": [
+                PeriodicPropertiesTransform(cutoff_radius=10.0),
                 PointCloudToGraphTransform("pyg", cutoff_dist=args.cutoff),
-                UnitCellCalculator(),
             ],
         },
-        batch_size=8,
-        num_workers=0,
+        batch_size=32,
+        num_workers=32,
     )
-
-    # dm = MatSciMLDataModule.from_devset(
-    #     "LiPSDataset",
-    #     dset_kwargs={
-    #         "transforms": [PointCloudToGraphTransform("pyg", cutoff_dist=args.cutoff)]
-    #     },
-    #     batch_size=8,
-    #     num_workers=0,
-    # )
 
     dm.setup()
     train_loader = dm.train_dataloader()
@@ -104,19 +62,15 @@ def main(args):
     batch = next(dataset_iter)
 
     atomic_numbers = torch.arange(0, 100)
-
-    # atomic_numbers = torch.unique(batch["graph"]["atomic_numbers"]).numpy()
-    # atomic_energies = np.array([E0s[i] for i in atomic_numbers])
-    atomic_energies = np.array([0.0 for _ in atomic_numbers])
-
-    (
-        atomic_inter_shift,
-        atomic_inter_scale,
-        avg_num_neighbors,
-    ) = compute_mean_std_atomic_inter_energy_and_avg_num_neighbors(
-        train_loader,
-        atomic_energies,
-    )
+    # atomic_inter_shift =
+    # atomic_inter_scale =
+    # avg_num_neighbors =
+    # gnome_precompute = {'mean': 64690.4765625, 'std': 42016.30859375, 'avg_num_neighbors': 25.7051}
+    # mp_traj_precompute = {'mean': 27179.298828125, 'std': 28645.603515625, 'avg_num_neighbors': 52.0138}
+    combo = {"mean": 59693.9375, "std": 45762.0234375, "avg_num_neighbors": 34.1558}
+    atomic_inter_shift = combo["mean"]
+    atomic_inter_scale = combo["std"]
+    avg_num_neighbors = combo["avg_num_neighbors"]
 
     # Load Model
     model_config = dict(
@@ -163,11 +117,23 @@ def main(args):
     print(task)
 
     # Start Training
+    # logger = CSVLogger(save_dir="./mace_experiments")
+    logger = WandbLogger(log_model="all", project="debug", name="mace-multi-data")
+
+    mc = ModelCheckpoint(monitor="val_force", save_top_k=5)
 
     trainer = pl.Trainer(
-        max_epochs=args.max_epochs,
-        log_every_n_steps=10,
-        accelerator="cpu",
+        max_epochs=50,
+        min_epochs=20,
+        log_every_n_steps=100,
+        accelerator="gpu",
+        devices=1,
+        strategy="ddp_find_unused_parameters_true",
+        logger=logger,
+        callbacks=[
+            GradientCheckCallback(),
+            mc,
+        ],
     )
 
     trainer.fit(task, datamodule=dm)
