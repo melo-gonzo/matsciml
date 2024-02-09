@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 
 import e3nn
 
@@ -15,8 +16,9 @@ from tqdm import tqdm
 
 from matsciml.datasets import transforms
 
-# import sys
-# sys.path.append(".\matsciml")  #Path to matsciml directory(or matsciml installed as package )
+sys.path.append(
+    "/store/code/open-catalyst/public-repo/matsciml",
+)  # Path to matsciml directory(or matsciml installed as package )
 from matsciml.datasets.lips import LiPSDataset, lips_devset
 from matsciml.datasets.transforms import (
     PeriodicPropertiesTransform,
@@ -44,8 +46,8 @@ def main(args):
     # Load Data
     dm = MatSciMLDataModule(
         "MaterialsProjectDataset",
-        train_path="/store/code/open-catalyst/data_lmdbs/gnome/train",
-        val_split="/store/code/open-catalyst/data_lmdbs/gnome/val",
+        train_path="/store/code/open-catalyst/data_lmdbs/mp-traj-gnome-combo/train",
+        val_split="/store/code/open-catalyst/data_lmdbs/mp-traj-gnome-combo/val",
         dset_kwargs={
             "transforms": [
                 PeriodicPropertiesTransform(cutoff_radius=10.0),
@@ -53,7 +55,7 @@ def main(args):
             ],
         },
         batch_size=32,
-        num_workers=32,
+        num_workers=16,
     )
 
     dm.setup()
@@ -62,15 +64,19 @@ def main(args):
     batch = next(dataset_iter)
 
     atomic_numbers = torch.arange(0, 100)
-    # atomic_inter_shift =
-    # atomic_inter_scale =
-    # avg_num_neighbors =
-    # gnome_precompute = {'mean': 64690.4765625, 'std': 42016.30859375, 'avg_num_neighbors': 25.7051}
-    # mp_traj_precompute = {'mean': 27179.298828125, 'std': 28645.603515625, 'avg_num_neighbors': 52.0138}
-    combo = {"mean": 59693.9375, "std": 45762.0234375, "avg_num_neighbors": 34.1558}
-    atomic_inter_shift = combo["mean"]
-    atomic_inter_scale = combo["std"]
-    avg_num_neighbors = combo["avg_num_neighbors"]
+    # Gnome
+    # pre_compute_params = {'mean': 64690.4765625, 'std': 42016.30859375, 'avg_num_neighbors': 25.7051}
+    # MP-Traj
+    pre_compute_params = {
+        "mean": 27179.298828125,
+        "std": 28645.603515625,
+        "avg_num_neighbors": 52.0138,
+    }
+    # Combined Datasets
+    # pre_compute_params = {"mean": 59693.9375, "std": 45762.0234375, "avg_num_neighbors": 34.1558}
+    atomic_inter_shift = pre_compute_params["mean"]
+    atomic_inter_scale = pre_compute_params["std"]
+    avg_num_neighbors = pre_compute_params["avg_num_neighbors"]
 
     # Load Model
     model_config = dict(
@@ -118,7 +124,7 @@ def main(args):
 
     # Start Training
     # logger = CSVLogger(save_dir="./mace_experiments")
-    logger = WandbLogger(log_model="all", project="debug", name="mace-multi-data")
+    logger = WandbLogger(log_model="all", project="debug", name="mace-mptraj-data")
 
     mc = ModelCheckpoint(monitor="val_force", save_top_k=5)
 
@@ -127,7 +133,7 @@ def main(args):
         min_epochs=20,
         log_every_n_steps=100,
         accelerator="gpu",
-        devices=1,
+        devices=8,
         strategy="ddp_find_unused_parameters_true",
         logger=logger,
         callbacks=[
