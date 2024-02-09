@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from tqdm import tqdm
-
-from matsciml.datasets import MaterialsProjectDataset
+from matsciml.datasets import IS2REDataset, NomadDataset
 from matsciml.datasets.transforms import (
     PeriodicPropertiesTransform,
     PointCloudToGraphTransform,
@@ -17,12 +15,11 @@ offsets and images using Pymatgen, which provides the edge definitions
 that are used by `PointCloudToGraphTransform`.
 """
 
-dset = MaterialsProjectDataset(
-    lmdb_root_path="/store/code/open-catalyst/data_lmdbs/gnome/train",
+dset = IS2REDataset.from_devset(
     transforms=[
-        PeriodicPropertiesTransform(cutoff_radius=10),
+        PeriodicPropertiesTransform(cutoff_radius=6.5),
         PointCloudToGraphTransform(backend="dgl"),
     ],
 )
-idx = 43851
-dset.__getitem__(idx)
+
+dset.__getitem__(25)
