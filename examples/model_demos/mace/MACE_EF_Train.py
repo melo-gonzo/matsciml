@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-sys.path.append("/store/code/open-catalyst/public-repo/matsciml/")
+sys.path.append("/workspace/ai-mat-top/matsciml_top/forks/carmelo_matsciml/")
 
 import e3nn
 
@@ -14,12 +14,13 @@ import pytorch_lightning as pl
 from mendeleev.fetch import fetch_ionization_energies
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
+import wandb
 from tqdm import tqdm
 
 from matsciml.datasets import transforms
 
 sys.path.append(
-    "/store/code/open-catalyst/public-repo/matsciml/",
+    "/workspace/ai-mat-top/matsciml_top/forks/carmelo_matsciml/",
 )  # Path to matsciml directory(or matsciml installed as package )
 from matsciml.datasets.lips import LiPSDataset, lips_devset
 from matsciml.datasets.transforms import (
@@ -76,8 +77,10 @@ pre_compute_params = {
     "avg_num_neighbors": 34.1558,
 }
 DATASET = "multi"
-TRAIN_PATH = "/store/code/open-catalyst/data_lmdbs/mp-traj-gnome-combo/train"
-VAL_PATH = "/store/code/open-catalyst/data_lmdbs/mp-traj-gnome-combo/val"
+# TRAIN_PATH = "/store/code/open-catalyst/data_lmdbs/mp-traj-gnome-combo/train"
+# VAL_PATH = "/store/code/open-catalyst/data_lmdbs/mp-traj-gnome-combo/val"
+TRAIN_PATH = "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/train"
+VAL_PATH = "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/val"
 
 
 def main(args):
@@ -89,7 +92,7 @@ def main(args):
         dset_kwargs={
             "transforms": [
                 PeriodicPropertiesTransform(cutoff_radius=10.0),
-                PointCloudToGraphTransform("pyg", cutoff_dist=args.cutoff),
+                PointCloudToGraphTransform("pyg", cutoff_dist=args.r_max),
             ],
         },
         batch_size=16,
@@ -109,10 +112,14 @@ def main(args):
 
     # Load Model
     model_config = dict(
-        r_max=args.cutoff,
+        r_max=args.r_max,
         num_bessel=args.num_bessel,
         num_polynomial_cutoff=args.num_polynomial_cutoff,
-        max_ell=args.Lmax,
+        max_ell=args.max_ell,
+        # max_L=args.max_L,
+        # num_channels=args.num_channels,
+        # num_radial_basis=args.num_radial_basis,
+        # scaling=args.scaling,
         interaction_cls=RealAgnosticResidualInteractionBlock,
         num_interactions=args.num_interactions,
         num_elements=len(atomic_numbers),
@@ -145,7 +152,9 @@ def main(args):
                 "hidden_dim": None,
             },
         },
-        loss_coeff={"energy": 1.0, "force": 1000.0},
+        loss_coeff={"energy": 1.0, "force": 10.0},
+        lr=0.005,
+        weight_decay=1e-8,
     )
 
     # Print model
@@ -153,7 +162,8 @@ def main(args):
 
     # Start Training
     # logger = CSVLogger(save_dir="./mace_experiments")
-    logger = WandbLogger(log_model="all", project="debug", name=f"mace-{DATASET}-data")
+    wandb.init(project='mace_debug', entity='m3rg', mode='online', )
+    logger = WandbLogger(log_model="all", name=f"mace-{DATASET}-data", save_dir='/workspace/nosnap/matsciml/mace_train')
 
     mc = ModelCheckpoint(monitor="val_force", save_top_k=5)
 
@@ -162,7 +172,7 @@ def main(args):
         min_epochs=20,
         log_every_n_steps=100,
         accelerator="gpu",
-        devices=4,
+        devices=8,
         strategy="ddp_find_unused_parameters_true",
         logger=logger,
         callbacks=[
@@ -176,12 +186,12 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MACE Training script")
-    parser.add_argument("--cutoff", type=float, default=5.0, help="Neighbor cutoff")
-    parser.add_argument("--Lmax", type=int, default=3, help="Spherical harmonic Lmax")
+    parser.add_argument("--r_max", type=float, default=6.0, help="Neighbor cutoff")
+    parser.add_argument("--max_ell", type=int, default=3, help="Spherical harmonic Lmax")
     parser.add_argument(
         "--num_bessel",
         type=int,
-        default=8,
+        default=3,
         help="Bessel embeding size",
     )
     parser.add_argument(
@@ -214,7 +224,36 @@ if __name__ == "__main__":
         default="16x0e",
         help="Irreps of Non-linear readout block",
     )
-    parser.add_argument("--max_epochs", type=int, default=1000, help="Max epochs")
+
+    parser.add_argument(
+        "--max_L",
+        type=int,
+        default=2,
+        help="max_L",
+    )
+
+    parser.add_argument(
+        "--num_channels",
+        type=int,
+        default=128,
+        help="num_channels",
+    )
+
+    parser.add_argument(
+        "--num_radial_basis",
+        type=int,
+        default=10,
+        help="num_radial_basis",
+    )
+
+    parser.add_argument(
+        "--scaling",
+        type=str,
+        default="rms_forces_scaling",
+        help="scaling parameter",
+    )
+
+    parser.add_argument("--max_epochs", type=int, default=100, help="Max epochs")
 
     args = parser.parse_args()
     main(args)
