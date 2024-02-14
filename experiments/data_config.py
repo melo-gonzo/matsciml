@@ -130,13 +130,13 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "/store/code/open-catalyst/data_lmdbs/mp-traj/devset",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj/devset",
+            "train_path": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/devset",
+            "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/devset",
         },
         "experiment": {
-            "train_path": "/store/code/open-catalyst/data_lmdbs/mp-traj/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj/val",
-            "test_split": "/store/code/open-catalyst/data_lmdbs/mp-traj/test",
+            "train_path": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/train",
+            "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/val",
+            "test_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/test",
             "normalize_kwargs": {},
         },
     },
