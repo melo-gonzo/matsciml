@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import pytorch_lightning as pl
-from model_config import *
+from model_config import available_models
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from matsciml.lightning.callbacks import CodeCarbonCallback
 from pytorch_lightning.loggers import CSVLogger
 
 from matsciml.lightning.callbacks import Timer
@@ -34,6 +35,9 @@ trainer_config = {
 def setup_callbacks(opt_target, log_path):
     callbacks = [
         ModelCheckpoint(monitor=opt_target, save_top_k=5),
+        CodeCarbonCallback(
+            output_dir=log_path, country_iso_code="USA", measure_power_secs=1
+        ),
         EarlyStopping(
             patience=15,
             monitor={opt_target},
