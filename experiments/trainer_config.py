@@ -5,6 +5,7 @@ from model_config import available_models
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from matsciml.lightning.callbacks import CodeCarbonCallback
 from pytorch_lightning.loggers import CSVLogger
+from data_config import available_data
 
 from matsciml.lightning.callbacks import Timer
 from matsciml.models.base import (
@@ -66,10 +67,13 @@ def setup_task(args):
     }
 
     task = task_map[args.task]
-    model_args = available_models["generic"]
-    model_args.update(available_models[args.model])
-    model_args.update({"task_keys": [args.target]})
-    task = task(**model_args)
+    task_args = available_models["generic"]
+    dset = available_data[args.data]
+    normalize_kwargs = dset[args.run_type].pop("normalize_kwargs", None)
+    task_args.update(available_models[args.model])
+    task_args.update({"task_keys": [args.target]})
+    task_args.update({"normalize_kwargs": normalize_kwargs})
+    task = task(**task_args)
     return task
 
 

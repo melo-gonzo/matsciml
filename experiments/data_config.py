@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from matsciml.datasets import *
 from matsciml.datasets.transforms import (
     DistancesTransform,
     FrameAveraging,
-    GraphToGraphTransform,
     GraphVariablesTransform,
     PeriodicPropertiesTransform,
     PointCloudToGraphTransform,
-    UnitCellCalculator,
+    MGLDataTransform,
 )
 from matsciml.lightning.data_utils import MatSciMLDataModule
 
@@ -160,6 +158,7 @@ available_data = {
 
 transforms = {
     "egnn": [
+        PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
         PeriodicPropertiesTransform(cutoff_radius=10.0),
         PointCloudToGraphTransform(
             "dgl",
@@ -168,6 +167,7 @@ transforms = {
         ),
     ],
     "faenet": [
+        PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
         PointCloudToGraphTransform(
             "pyg",
             cutoff_dist=20.0,
@@ -176,6 +176,7 @@ transforms = {
         FrameAveraging(frame_averaging="3D", fa_method="stochastic"),
     ],
     "megnet": [
+        PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
         PointCloudToGraphTransform(
             "dgl",
             cutoff_dist=20.0,
@@ -184,14 +185,30 @@ transforms = {
         DistancesTransform(),
         GraphVariablesTransform(),
     ],
-    "m3gnet": [],
+    "m3gnet": [
+        PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
+        PointCloudToGraphTransform(
+            "dgl",
+            cutoff_dist=20.0,
+            node_keys=["pos", "atomic_numbers"],
+        ),
+        MGLDataTransform(),
+    ],
+    "tensornet": [
+        PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
+        PointCloudToGraphTransform(
+            "dgl",
+            cutoff_dist=20.0,
+            node_keys=["pos", "atomic_numbers"],
+        ),
+    ],
 }
 
 
 def setup_datamodule(args):
     dset = available_data[args.data]
     dm_kwargs = available_data["generic"]["experiment"]
-    normalize_kwargs = dset[args.run_type].pop("normalize_kwargs", None)
+    dset[args.run_type].pop("normalize_kwargs", None)
     dm_kwargs.update(dset[args.run_type])
     dm = MatSciMLDataModule(
         dataset=dset["dataset"],

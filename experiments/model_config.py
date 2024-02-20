@@ -3,7 +3,7 @@ from __future__ import annotations
 from torch.nn import LayerNorm, SiLU
 
 from matsciml.datasets.utils import element_types
-from matsciml.models import *
+from matsciml.models import PLEGNNBackbone, FAENet, M3GNet, MEGNet, TensorNet
 
 available_models = {
     "egnn": {
@@ -76,6 +76,13 @@ available_models = {
             "encoder_only": True,
         },
         "output_kwargs": {"lazy": False, "input_dim": 640, "hidden_dim": 640},
+    },
+    "tensornet": {
+        "encoder_class": TensorNet,
+        "encoder_kwargs": {
+            "element_types": element_types(),
+        },
+        "output_kwargs": {"lazy": False, "input_dim": 64, "hidden_dim": 64},
     },
     "generic": {
         "output_kwargs": {
