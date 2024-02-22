@@ -251,11 +251,13 @@ data_targets = {
     "symmetry": [],
     "mp-traj": [
         "uncorrected_total_energy",
+        "corrected_total_energy",
         "energy_per_atom",
         "ef_per_atom",
         "e_per_atom_relaxed",
         "ef_per_atom_relaxed",
         "force",
+        "stress",
         "magmom",
         "bandgap",
     ],

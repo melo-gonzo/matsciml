@@ -36,9 +36,9 @@ trainer_config = {
 def setup_callbacks(opt_target, log_path):
     callbacks = [
         ModelCheckpoint(monitor=opt_target, save_top_k=5),
-        CodeCarbonCallback(
-            output_dir=log_path, country_iso_code="USA", measure_power_secs=1
-        ),
+        # CodeCarbonCallback(
+        #     output_dir=log_path, country_iso_code="USA", measure_power_secs=1
+        # ),
         EarlyStopping(
             patience=15,
             monitor={opt_target},

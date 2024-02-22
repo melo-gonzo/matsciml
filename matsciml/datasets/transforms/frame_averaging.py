@@ -11,6 +11,8 @@ from itertools import product
 
 import torch
 
+__all__ = ["FrameAveraging"]
+
 
 from matsciml.common import package_registry
 from matsciml.datasets.transforms.base import AbstractDataTransform
@@ -21,6 +23,7 @@ if package_registry["dgl"]:
 if package_registry["pyg"]:
     import torch_geometric
     from torch_geometric.transforms import LinearTransformation
+
 
 def compute_frames(
     eigenvec,
