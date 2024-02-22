@@ -3,7 +3,7 @@ from __future__ import annotations
 from torch.nn import LayerNorm, SiLU
 
 from matsciml.datasets.utils import element_types
-from matsciml.models import PLEGNNBackbone, FAENet, M3GNet, MEGNet, TensorNet
+from matsciml.models import FAENet, M3GNet, MEGNet, PLEGNNBackbone, TensorNet
 
 available_models = {
     "egnn": {

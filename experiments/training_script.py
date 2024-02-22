@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import os
 import sys
 
-sys.path.append("/store/code/open-catalyst/private-repo/matsciml-fork")
+cg_msl = "/store/code/open-catalyst/public-repo/matsciml"
+
+if os.path.exists(cg_msl):
+    sys.path.append(cg_msl)
 
 from argparse import ArgumentParser
 
-import pytorch_lightning as pl
 from data_config import *
 from trainer_config import *
 from training_utils.utils import *
@@ -17,6 +20,7 @@ do_ip_setup()
 def main(args):
     opt_target = f"val_{args.target}"
     log_path = os.path.join("./experiments-2024/", args.run_type, args.model, args.data)
+    os.makedirs(log_path, exist_ok=True)
 
     callbacks = setup_callbacks(opt_target, log_path)
     logger = setup_logger(log_path)
@@ -39,7 +43,17 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data",
         required=True,
-        choices=["is2re", "s2ef", "cmd", "mp", "lips", "nomad", "oqmd"],
+        choices=[
+            "is2re",
+            "s2ef",
+            "cmd",
+            "mp",
+            "lips",
+            "nomad",
+            "oqmd",
+            "mp-traj",
+            "gnome",
+        ],
     )
 
     parser.add_argument(
@@ -66,6 +80,9 @@ if __name__ == "__main__":
     if args.target not in data_targets[args.data]:
         raise Exception(
             f"Requested target {args.target} not available in {args.data} dataset.",
+            f"Available keys are: {data_targets[args.data]}",
         )
 
     main(args)
+
+# python experiments/training_script.py --model faenet --data mp-traj --task sr --target corrected_total_energy --gpus 4

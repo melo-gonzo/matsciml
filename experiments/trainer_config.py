@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import os
+
 import pytorch_lightning as pl
+from data_config import available_data
 from model_config import available_models
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.loggers import CSVLogger, WandbLogger
+
 from matsciml.lightning.callbacks import CodeCarbonCallback
-from pytorch_lightning.loggers import CSVLogger
-from data_config import available_data
 
 from matsciml.lightning.callbacks import Timer
 from matsciml.models.base import (
@@ -36,9 +39,9 @@ trainer_config = {
 def setup_callbacks(opt_target, log_path):
     callbacks = [
         ModelCheckpoint(monitor=opt_target, save_top_k=5),
-        CodeCarbonCallback(
-            output_dir=log_path, country_iso_code="USA", measure_power_secs=1
-        ),
+        # CodeCarbonCallback(
+        #     output_dir=log_path, country_iso_code="USA", measure_power_secs=1
+        # ),
         EarlyStopping(
             patience=15,
             monitor={opt_target},
@@ -53,6 +56,21 @@ def setup_callbacks(opt_target, log_path):
 
 def setup_logger(log_path):
     logger = CSVLogger(save_dir=log_path)
+    log_path.replace("/", "-")
+
+    cg_wb_dir = "/store/nosnap/chem-ai/wb-logs"
+
+    if os.path.exists(cg_wb_dir):
+        save_dir = cg_wb_dir
+
+    logger = WandbLogger(
+        log_model="all",
+        name=log_path.replace("/", "-"),
+        save_dir=save_dir,
+        project="debug",
+        entity="ml-logs",
+        mode="online",
+    )
     return logger
 
 
