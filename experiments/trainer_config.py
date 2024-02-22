@@ -18,6 +18,7 @@ from matsciml.models.base import (
     GradFreeForceRegressionTask,
     MaceEnergyForceTask,
     ScalarRegressionTask,
+    MultiTaskLitModule,
 )
 
 trainer_config = {
@@ -62,6 +63,8 @@ def setup_logger(log_path):
 
     if os.path.exists(cg_wb_dir):
         save_dir = cg_wb_dir
+    else:
+        save_dir = "./experiments-2024/wandb"
 
     logger = WandbLogger(
         log_model="all",
@@ -84,14 +87,26 @@ def setup_task(args):
         "gffr": GradFreeForceRegressionTask,
     }
 
-    task = task_map[args.task]
-    task_args = available_models["generic"]
-    dset = available_data[args.data]
-    normalize_kwargs = dset[args.run_type].pop("normalize_kwargs", None)
-    task_args.update(available_models[args.model])
-    task_args.update({"task_keys": [args.target]})
-    task_args.update({"normalize_kwargs": normalize_kwargs})
-    task = task(**task_args)
+    tasks = []
+    for task in args.tasks:
+        task = task_map[task]
+        task_args = available_models["generic"]
+        # TODOD: support multi data
+        dset = available_data[args.data[0]]
+        normalize_kwargs = dset[args.run_type].pop("normalize_kwargs", None)
+        task_args.update(available_models[args.model])
+        task_args.update({"task_keys": args.targets})
+        task_args.update({"normalize_kwargs": normalize_kwargs})
+        task = task(**task_args)
+        tasks.append(task)
+    if len(tasks) > 1:
+        datas = []
+        if len(args.data) == 1:
+            datas = [available_data[args.data[0]]["dataset"]] * len(tasks)
+        for data in args.data:
+            datas.append(available_data[data]["dataset"])
+        task = MultiTaskLitModule(tuple(zip((datas, tasks))))
+
     return task
 
 

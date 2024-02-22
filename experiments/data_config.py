@@ -206,7 +206,11 @@ transforms = {
 
 
 def setup_datamodule(args):
-    dset = available_data[args.data]
+    if len(args.data) > 1:
+        raise Exception("Cannot handle more than one dataset at the moment.")
+    else:
+        data = args.data[0]
+    dset = available_data[data]
     dm_kwargs = available_data["generic"]["experiment"]
     dset[args.run_type].pop("normalize_kwargs", None)
     dm_kwargs.update(dset[args.run_type])

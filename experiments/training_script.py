@@ -18,8 +18,11 @@ do_ip_setup()
 
 
 def main(args):
-    opt_target = f"val_{args.target}"
-    log_path = os.path.join("./experiments-2024/", args.run_type, args.model, args.data)
+    print("fix here main")
+    opt_target = f"val_{args.targets}"
+    log_path = os.path.join(
+        "./experiments-2024/", args.run_type, args.model, "-".join(args.data)
+    )
     os.makedirs(log_path, exist_ok=True)
 
     callbacks = setup_callbacks(opt_target, log_path)
@@ -42,6 +45,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--data",
+        nargs="+",
         required=True,
         choices=[
             "is2re",
@@ -57,14 +61,16 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--task",
+        "--tasks",
+        nargs="+",
         required=True,
         choices=["sr", "fr", "bc", "csc", "mef", "gffr"],
         help="ScalarRegressionTask\nForceRegressionTask\nBinaryClassificationTask\nCrystalSymmetryClassificationTask\nMaceEnergyForceTask\nGradFreeForceRegressionTask",
     )
 
     parser.add_argument(
-        "--target",
+        "--targets",
+        nargs="+",
         required=True,
         default="energy",
     )
@@ -77,12 +83,16 @@ if __name__ == "__main__":
     else:
         args.run_type = "experiment"
 
-    if args.target not in data_targets[args.data]:
-        raise Exception(
-            f"Requested target {args.target} not available in {args.data} dataset.",
-            f"Available keys are: {data_targets[args.data]}",
-        )
+    for idx, target in enumerate(args.targets):
+        for data in args.data:
+            if target not in data_targets[data]:
+                raise Exception(
+                    f"Requested target {target} not available in {data} dataset.",
+                    f"Available keys are: {data_targets[data]}",
+                )
 
     main(args)
 
-# python experiments/training_script.py --model faenet --data mp-traj --task sr --target corrected_total_energy --gpus 4
+# python experiments/training_script.py --model faenet --data mp-traj --task sr --targets corrected_total_energy force --debug
+# MultiTask single Dataset
+# python experiments/training_script.py --model faenet --data mp-traj --task sr fr --targets corrected_total_energy force --debug
