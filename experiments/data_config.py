@@ -4,9 +4,9 @@ from matsciml.datasets.transforms import (
     DistancesTransform,
     FrameAveraging,
     GraphVariablesTransform,
+    MGLDataTransform,
     PeriodicPropertiesTransform,
     PointCloudToGraphTransform,
-    MGLDataTransform,
 )
 from matsciml.lightning.data_utils import MatSciMLDataModule
 

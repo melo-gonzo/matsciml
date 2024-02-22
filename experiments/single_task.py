@@ -6,8 +6,6 @@ import sys
 sys.path.append("/store/code/open-catalyst/private-repo/matsciml-fork")
 import logging
 import os
-import socket
-import time
 import traceback
 
 import pytorch_lightning as pl
@@ -15,7 +13,7 @@ import torch
 from ocpmodels.lightning.callbacks import GradientCheckCallback, ThroughputCallback
 from ocpmodels.lightning.data_utils import IS2REDGLDataModule
 from ocpmodels.models import PLEGNNBackbone
-from ocpmodels.models.base import ForceRegressionTask, ScalarRegressionTask
+from ocpmodels.models.base import ScalarRegressionTask
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 from torch.nn import LazyBatchNorm1d, SiLU
@@ -126,7 +124,7 @@ try:
     trainer.fit(task, datamodule=dm)
 
 
-except Exception as e:
+except Exception:
     with open(os.path.join(log_path, "error_log.txt"), "a+") as file:
         file.write("\n" + str(traceback.format_exc()))
         print(traceback.format_exc())

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import os
 import sys
 
-sys.path.append("/store/code/open-catalyst/public-repo/matsciml")
+cg_msl = "/store/code/open-catalyst/public-repo/matsciml"
+
+if os.path.exists(cg_msl):
+    sys.path.append(cg_msl)
 
 from argparse import ArgumentParser
 
-import pytorch_lightning as pl
 from data_config import *
 from trainer_config import *
 from training_utils.utils import *
@@ -82,4 +85,4 @@ if __name__ == "__main__":
 
     main(args)
 
-# python experiments/training_script.py --model faenet --data mp-traj --task sr --target corrected_total_energy --debug
+# python experiments/training_script.py --model faenet --data mp-traj --task sr --target corrected_total_energy --gpus 4
