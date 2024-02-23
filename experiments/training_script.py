@@ -32,7 +32,6 @@ def main(args, log_path):
     dm = setup_datamodule(args)
     task = setup_task(args)
     trainer = setup_trainer(args, callbacks, logger)
-
     trainer.fit(task, datamodule=dm)
 
 
@@ -134,3 +133,8 @@ if __name__ == "__main__":
 # python experiments/training_script.py --model megnet --data materials-project --task sr bc --targets efermi is_stable --gpus 1
 # python experiments/training_script.py --model megnet --data materials-project --task sr csc --targets efermi symmetry_group --gpus 1
 # python experiments/training_script.py --model megnet --data materials-project --task bc csc --targets is_stable symmetry_group --gpus 1
+
+
+# Multi Data Multi Task
+# python experiments/training_script.py --model egnn --data materials-project nomad --task sr sr --targets formation_energy_per_atom relative_energy --gpus 1
+

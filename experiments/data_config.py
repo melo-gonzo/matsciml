@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import json
+import sys
 from copy import deepcopy
 
-from matsciml.datasets.transforms import (
-    DistancesTransform,
-    FrameAveraging,
-    GraphVariablesTransform,
-    MGLDataTransform,
-    PeriodicPropertiesTransform,
-    PointCloudToGraphTransform,
-)
-from matsciml.lightning.data_utils import MatSciMLDataModule
+from matsciml.datasets import *
+from matsciml.datasets.transforms import (DistancesTransform, FrameAveraging,
+                                          GraphVariablesTransform,
+                                          MGLDataTransform,
+                                          PeriodicPropertiesTransform,
+                                          PointCloudToGraphTransform)
+from matsciml.lightning.data_utils import (MatSciMLDataModule, MultiDataModule,
+                                           MultiDataset)
 
 available_data = {
     "is2re": {
@@ -229,19 +229,43 @@ transforms = {
 
 
 def setup_datamodule(args):
-    if len(args.data) > 1:
-        raise Exception("Cannot handle more than one dataset at the moment.")
-    else:
+    if len(args.data) == 1:
         data = args.data[0]
-    dset = deepcopy(available_data[data])
-    dm_kwargs = deepcopy(available_data["generic"]["experiment"])
-    dset[args.run_type].pop("normalize_kwargs", None)
-    dm_kwargs.update(dset[args.run_type])
-    dm = MatSciMLDataModule(
-        dataset=dset["dataset"],
-        dset_kwargs={"transforms": transforms[args.model]},
-        **dm_kwargs,
-    )
+        dset = deepcopy(available_data[data])
+        dm_kwargs = deepcopy(available_data["generic"]["experiment"])
+        dset[args.run_type].pop("normalize_kwargs", None)
+        dm_kwargs.update(dset[args.run_type])
+        dm = MatSciMLDataModule(
+            dataset=dset["dataset"],
+            dset_kwargs={"transforms": transforms[args.model]},
+            **dm_kwargs,
+        )
+    else:
+        train_dset_list = []
+        val_dset_list = []
+        for data in args.data:
+            dset = deepcopy(available_data[data])
+            dm_kwargs = deepcopy(available_data["generic"]["experiment"])
+            dset[args.run_type].pop("normalize_kwargs", None)
+            dm_kwargs.update(dset[args.run_type])
+            dataset_name = dset["dataset"]
+            dataset = getattr(sys.modules[__name__], dataset_name)
+            model_transforms = transforms[args.model]
+            train_dset_list.append(
+                dataset(dm_kwargs["train_path"], transforms=model_transforms)
+            )
+            val_dset_list.append(
+                dataset(dm_kwargs["val_split"], transforms=model_transforms)
+            )
+
+        train_dset = MultiDataset(train_dset_list)
+        val_dset = MultiDataset(val_dset_list)
+        dm = MultiDataModule(
+            train_dataset=train_dset,
+            val_dataset=val_dset,
+            batch_size=dm_kwargs["batch_size"],
+            num_workers=0,  # dm_kwargs["num_workers"],
+        )
     return dm
 
 

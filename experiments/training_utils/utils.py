@@ -16,12 +16,12 @@ def error_log(e, log_path):
 
 def check_args(args, data_targets):
     for idx, target in enumerate(args.targets):
-        for data in args.data:
-            if target not in data_targets[data]:
-                raise Exception(
-                    f"Requested target {target} not available in {data} dataset.",
-                    f"Available keys are: {data_targets[data]}",
-                )
+        data_name = args.data[idx] if len(args.data) > 1 else args.data[0]
+        if target not in data_targets[data_name]:
+            raise Exception(
+                f"Requested target {target} not available in {data_name} dataset.",
+                f"Available keys are: {data_targets[data_name]}",
+            )
 
 
 def do_ip_setup():

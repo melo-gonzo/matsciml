@@ -180,8 +180,10 @@ class BaseLMDBDataset(Dataset):
                     try:
                         data = transform(data)
                     except Exception:
+                        import traceback
                         with open("transform_fail.txt", "w") as f:
                             f.write(str(keys))
+                        print(traceback.format_exc())
                         import os
 
                         os._exit(0)

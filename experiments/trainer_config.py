@@ -85,6 +85,15 @@ def setup_task(args):
     }
 
     tasks = []
+    if len(args.data) > 1 and len(args.tasks) <= 1:
+        raise Exception("Need to specify one task per dataset")
+    if len(args.data) > 1 and len(args.targets) <= 1:
+        raise Exception("Need to specify one task per dataset")
+    if len(args.targets) > 1 and len(args.tasks) <= 1:
+        raise Exception("Need to specify one task per target")
+    if len(args.targets) <= 1 and len(args.tasks) > 1:
+        raise Exception("Need to specify one target per task")
+
     for idx, task in enumerate(args.tasks):
         task = task_map[task]
         task_args = {}
@@ -105,6 +114,7 @@ def setup_task(args):
         else:
             for data in args.data:
                 datas.append(available_data[data]["dataset"])
+
         task = MultiTaskLitModule(*list(zip(datas, tasks)))
 
     return task
