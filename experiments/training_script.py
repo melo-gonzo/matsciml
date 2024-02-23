@@ -85,7 +85,11 @@ if __name__ == "__main__":
         args.run_type = "experiment"
 
     log_path = os.path.join(
-        "./experiments-2024-logs/", args.run_type, args.model, "-".join(args.data)
+        "./experiments-2024-logs/",
+        args.run_type,
+        args.model,
+        "-".join(args.data),
+        "-".join(args.targets),
     )
 
     try:
