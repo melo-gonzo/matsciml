@@ -14,6 +14,7 @@ import torch
 from einops import reduce
 from torch import Tensor, nn
 from torch.optim import AdamW, Optimizer, lr_scheduler
+import torchmetrics
 
 from matsciml.common import package_registry
 from matsciml.common.registry import registry
@@ -701,6 +702,69 @@ class BaseTaskModule(pl.LightningModule):
         self.task_keys = task_keys
         self.embedding_reduction_type = embedding_reduction_type
         self.save_hyperparameters(ignore=["encoder", "loss_func"])
+        accuracy_func = kwargs.get("accuracy_func", None)
+        if accuracy_func is not None:
+            self.accuracy_func = accuracy_func(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+            )
+
+            self.accuracy_func_5 = accuracy_func(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+                top_k=5,
+            )
+            self.accuracy_func_10 = accuracy_func(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+                top_k=10,
+            )
+            self._precision = torchmetrics.Precision(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+            )
+            self._precision_5 = torchmetrics.Precision(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+                top_k=5,
+            )
+            self._precision_10 = torchmetrics.Precision(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+                top_k=10,
+            )
+
+            self.recall = torchmetrics.Recall(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+            )
+            self.recall_5 = torchmetrics.Recall(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+                top_k=5,
+            )
+            self.recall_10 = torchmetrics.Recall(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+                top_k=10,
+            )
+
+            self.f1 = torchmetrics.F1Score(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+            )
+            self.f1_5 = torchmetrics.F1Score(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+                top_k=5,
+            )
+            self.f1_10 = torchmetrics.F1Score(
+                task=kwargs["classification_type"],
+                num_classes=kwargs.get("num_classes", None),
+                top_k=10,
+            )
+        else:
+            self.accuracy_func = accuracy_func
 
     @property
     def task_keys(self) -> list[str]:
@@ -902,16 +966,74 @@ class BaseTaskModule(pl.LightningModule):
             Dictionary containing the joint loss, and a subdictionary
             containing each individual target loss.
         """
+        # targets = self._get_targets(batch)
+        # predictions = self(batch)
+        # losses = {}
+        # for key in self.task_keys:
+        #     target_val = targets[key]
+        #     if self.uses_normalizers:
+        #         target_val = self.normalizers[key].norm(target_val)
+        #     losses[key] = self.loss_func(predictions[key], target_val)
+        # total_loss: torch.Tensor = sum(losses.values())
+        # return {"loss": total_loss, "log": losses}
         targets = self._get_targets(batch)
         predictions = self(batch)
         losses = {}
+        accuracies = {}
+        precisions = {}
+        recalls = {}
+        f1s = {}
         for key in self.task_keys:
             target_val = targets[key]
             if self.uses_normalizers:
                 target_val = self.normalizers[key].norm(target_val)
+            # if predictions[key].shape[-1] >1:
+            #     preds = torch.argmax(predictions[key], axis=1)
+            # else:
+            preds = predictions[key]
+            if self.accuracy_func is not None:
+                accuracies[key] = self.accuracy_func(preds, target_val)
+                accuracies[f"{key}_5"] = self.accuracy_func_5(preds, target_val)
+                accuracies[f"{key}_10"] = self.accuracy_func_10(preds, target_val)
+
+                precisions[key] = self._precision(preds, target_val)
+                precisions[f"{key}_5"] = self._precision_5(preds, target_val)
+                precisions[f"{key}_10"] = self._precision_10(preds, target_val)
+
+                recalls[key] = self.recall(preds, target_val)
+                recalls[f"{key}_5"] = self.recall_5(preds, target_val)
+                recalls[f"{key}_10"] = self.recall_10(preds, target_val)
+
+                f1s[key] = self.f1(preds, target_val)
+                f1s[f"{key}_5"] = self.f1_5(preds, target_val)
+                f1s[f"{key}_10"] = self.f1_10(preds, target_val)
+
             losses[key] = self.loss_func(predictions[key], target_val)
+
         total_loss: torch.Tensor = sum(losses.values())
-        return {"loss": total_loss, "log": losses}
+        total_accuracy: torch.Tensor = sum(accuracies.values())
+
+        log_dict = {}
+        for k, v in losses.items():
+            log_dict[f"{k}"] = v
+
+        for k, v in accuracies.items():
+            log_dict[f"{k}_acc"] = v
+
+        for k, v in precisions.items():
+            log_dict[f"{k}_precision"] = v
+
+        for k, v in recalls.items():
+            log_dict[f"{k}_recall"] = v
+
+        for k, v in f1s.items():
+            log_dict[f"{k}_f1s"] = v
+
+        return {
+            "loss": total_loss,
+            "log": log_dict,
+            "acc": total_accuracy,
+        }
 
     def configure_optimizers(self) -> torch.optim.AdamW:
         opt = torch.optim.AdamW(

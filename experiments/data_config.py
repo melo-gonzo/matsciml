@@ -183,7 +183,6 @@ available_data = {
 transforms = {
     "egnn": [
         PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
-        PeriodicPropertiesTransform(cutoff_radius=10.0),
         PointCloudToGraphTransform(
             "dgl",
             cutoff_dist=20.0,
