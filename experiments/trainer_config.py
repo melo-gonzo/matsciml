@@ -39,17 +39,17 @@ trainer_config = {
 
 def setup_callbacks(opt_target, log_path):
     callbacks = [
-        ModelCheckpoint(monitor=opt_target, save_top_k=5),
+        # ModelCheckpoint(monitor=opt_target, save_top_k=5),
         # CodeCarbonCallback(
         #     output_dir=log_path, country_iso_code="USA", measure_power_secs=1
         # ),
-        EarlyStopping(
-            patience=15,
-            monitor={opt_target},
-            mode="min",
-            verbose=True,
-            check_finite=False,
-        ),
+        # EarlyStopping(
+        #     patience=15,
+        #     monitor={opt_target},
+        #     mode="min",
+        #     verbose=True,
+        #     check_finite=False,
+        # ),
         Timer(),
     ]
     return callbacks
@@ -66,9 +66,10 @@ def setup_logger(log_path):
     else:
         save_dir = "./experiments-2024/wandb"
 
+    name = log_path.replace("/", "-")[2:]
     logger = WandbLogger(
         log_model="all",
-        name=log_path.replace("/", "-"),
+        name=name,
         save_dir=save_dir,
         project="debug",
         entity="ml-logs",
@@ -88,14 +89,14 @@ def setup_task(args):
     }
 
     tasks = []
-    for task in args.tasks:
+    for idx, task in enumerate(args.tasks):
         task = task_map[task]
         task_args = available_models["generic"]
-        # TODOD: support multi data
+        # TODO: support multi data
         dset = available_data[args.data[0]]
         normalize_kwargs = dset[args.run_type].pop("normalize_kwargs", None)
         task_args.update(available_models[args.model])
-        task_args.update({"task_keys": args.targets})
+        task_args.update({"task_keys": [args.targets[idx]]})
         task_args.update({"normalize_kwargs": normalize_kwargs})
         task = task(**task_args)
         tasks.append(task)
@@ -103,9 +104,10 @@ def setup_task(args):
         datas = []
         if len(args.data) == 1:
             datas = [available_data[args.data[0]]["dataset"]] * len(tasks)
-        for data in args.data:
-            datas.append(available_data[data]["dataset"])
-        task = MultiTaskLitModule(tuple(zip((datas, tasks))))
+        else:
+            for data in args.data:
+                datas.append(available_data[data]["dataset"])
+        task = MultiTaskLitModule(*list(zip(datas, tasks)))
 
     return task
 

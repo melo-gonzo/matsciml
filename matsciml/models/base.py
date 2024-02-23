@@ -1498,7 +1498,7 @@ class BinaryClassificationTask(BaseTaskModule):
 
 @registry.register_task("ForceRegressionTask")
 class ForceRegressionTask(BaseTaskModule):
-    __task__ = "regression"
+    __task__ = "force_regression"
     __needs_grads__ = ["pos"]
 
     def __init__(
@@ -1750,6 +1750,7 @@ class ForceRegressionTask(BaseTaskModule):
 
 @registry.register_task("GradFreeForceRegressionTask")
 class GradFreeForceRegressionTask(ScalarRegressionTask):
+    __task__ = "gff_regression"
     def __init__(
         self,
         encoder: nn.Module | None = None,
@@ -2009,6 +2010,7 @@ class MultiTaskLitModule(pl.LightningModule):
         self.encoder = tasks[0][1].encoder
         dset_names = set()
         subtask_hparams = {}
+        # task_counts = {}
         for index, entry in enumerate(tasks):
             # unpack tuple
             (dset_name, task) = entry
@@ -2019,6 +2021,11 @@ class MultiTaskLitModule(pl.LightningModule):
             if index != 0:
                 task.encoder = self.encoder
             # nest the task based on its category
+            # if task.__task__ in task_counts.keys():
+            #     task_counts[task.__task__] += 1
+            # else:
+            #     task_counts[task.__task__] = 0
+            # task_map[dset_name][f"{task.__task__}{task_counts[task.__task__]}"] = task
             task_map[dset_name][task.__task__] = task
             # add dataset names to determine forward logic
             dset_names.add(dset_name)

@@ -19,7 +19,7 @@ do_ip_setup()
 
 def main(args):
     print("fix here main")
-    opt_target = f"val_{args.targets}"
+    opt_target = f"val_{args.targets[0]}"
     log_path = os.path.join(
         "./experiments-2024/", args.run_type, args.model, "-".join(args.data)
     )
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         required=True,
-        choices=["egnn", "megnet", "faenet", "m3gnet", "gala", "mace"],
+        choices=["egnn", "megnet", "faenet", "m3gnet", "gala", "mace", "tensornet"],
     )
     parser.add_argument(
         "--data",
@@ -83,16 +83,16 @@ if __name__ == "__main__":
     else:
         args.run_type = "experiment"
 
-    for idx, target in enumerate(args.targets):
-        for data in args.data:
-            if target not in data_targets[data]:
-                raise Exception(
-                    f"Requested target {target} not available in {data} dataset.",
-                    f"Available keys are: {data_targets[data]}",
-                )
+    # for idx, target in enumerate(args.targets):
+    #     for data in args.data:
+    #         if target not in data_targets[data]:
+    #             raise Exception(
+    #                 f"Requested target {target} not available in {data} dataset.",
+    #                 f"Available keys are: {data_targets[data]}",
+    #             )
 
     main(args)
 
 # python experiments/training_script.py --model faenet --data mp-traj --task sr --targets corrected_total_energy force --debug
 # MultiTask single Dataset
-# python experiments/training_script.py --model faenet --data mp-traj --task sr fr --targets corrected_total_energy force --debug
+# python experiments/training_script.py --model faenet --data gnome --task sr gffr --targets energy force --debug

@@ -44,7 +44,7 @@ class NomadDataset(PointCloudDataset):
             Dict[str, List[str]]: target keys
         """
         return {
-            "regression": ["energy_total", "efermi"],
+            "regression": ["relative_energy", "efermi"],
             "classification": ["spin_polarized"],
         }
 
@@ -158,6 +158,8 @@ class NomadDataset(PointCloudDataset):
             band_structure = band_structure[-1]  # Take the last value from the list
         return_dict["efermi"] = band_structure["energy_fermi"] * 6.241509e18
         return_dict["energy_total"] = data["energies"]["total"]["value"] * 6.241509e18
+        for k in ["reference_energy", "reference_structure", "relative_energy"]:
+            return_dict[k] = data[k]
         # data['properties']['electronic']['dos_electronic']['energy_fermi']
         return_dict["spin_polarized"] = band_structure["spin_polarized"]
         return_dict["symmetry"] = {}

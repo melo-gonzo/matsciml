@@ -75,7 +75,7 @@ class OQMDDataset(PointCloudDataset):
         # coordinates remains the original particle positions
         coords = torch.tensor(data["cart_coords"])
         return_dict["pos"] = coords
-        unit_cell = data["unit_cell"]
+        unit_cell = data["cell"]
         system_size = coords.size(0)
         node_choices = self.choose_dst_nodes(system_size, self.full_pairwise)
         src_nodes, dst_nodes = node_choices["src_nodes"], node_choices["dst_nodes"]

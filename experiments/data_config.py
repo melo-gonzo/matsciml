@@ -136,6 +136,7 @@ available_data = {
             "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/val",
             "test_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/test",
             "normalize_kwargs": {},
+            "batch_size": 4
         },
     },
     "gnome": {
@@ -246,7 +247,7 @@ data_targets = {
     "nomad": [
         "spin_polarized",
         "efermi",
-        "energy_total",
+        "relative_energy",
         "symmetry_number",
         "symmetry_symbol",
         "symmetry_group",

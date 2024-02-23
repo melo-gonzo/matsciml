@@ -236,6 +236,10 @@ class MaterialsProjectDataset(PointCloudDataset):
             A single sample/material from Materials Project.
         """
         data: dict[str, Any] = super().data_from_key(lmdb_index, subindex)
+        try:
+            data['energy'] = data['corrected_total_energy']
+        except Exception:
+            pass
         return_dict = {}
         # parse out relevant structure/lattice data
         self._parse_structure(data, return_dict)
