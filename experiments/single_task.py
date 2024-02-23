@@ -10,7 +10,8 @@ import traceback
 
 import pytorch_lightning as pl
 import torch
-from ocpmodels.lightning.callbacks import GradientCheckCallback, ThroughputCallback
+from ocpmodels.lightning.callbacks import (GradientCheckCallback,
+                                           ThroughputCallback)
 from ocpmodels.lightning.data_utils import IS2REDGLDataModule
 from ocpmodels.models import PLEGNNBackbone
 from ocpmodels.models.base import ScalarRegressionTask

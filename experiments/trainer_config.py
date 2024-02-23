@@ -1,25 +1,21 @@
 from __future__ import annotations
 
 import os
+from copy import deepcopy
 
 import pytorch_lightning as pl
 from data_config import available_data
 from model_config import available_models
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
-from copy import deepcopy
-
 
 from matsciml.lightning.callbacks import Timer
-from matsciml.models.base import (
-    BinaryClassificationTask,
-    CrystalSymmetryClassificationTask,
-    ForceRegressionTask,
-    GradFreeForceRegressionTask,
-    MaceEnergyForceTask,
-    ScalarRegressionTask,
-    MultiTaskLitModule,
-)
+from matsciml.models.base import (BinaryClassificationTask,
+                                  CrystalSymmetryClassificationTask,
+                                  ForceRegressionTask,
+                                  GradFreeForceRegressionTask,
+                                  MaceEnergyForceTask, MultiTaskLitModule,
+                                  ScalarRegressionTask)
 
 trainer_config = {
     "debug": {

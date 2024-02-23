@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import os
 import socket
-import traceback
 import time
+import traceback
 
 
 def error_log(e, log_path):

@@ -3,14 +3,11 @@ from __future__ import annotations
 import json
 from copy import deepcopy
 
-from matsciml.datasets.transforms import (
-    DistancesTransform,
-    FrameAveraging,
-    GraphVariablesTransform,
-    MGLDataTransform,
-    PeriodicPropertiesTransform,
-    PointCloudToGraphTransform,
-)
+from matsciml.datasets.transforms import (DistancesTransform, FrameAveraging,
+                                          GraphVariablesTransform,
+                                          MGLDataTransform,
+                                          PeriodicPropertiesTransform,
+                                          PointCloudToGraphTransform)
 from matsciml.lightning.data_utils import MatSciMLDataModule
 
 available_data = {
