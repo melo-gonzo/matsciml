@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from copy import deepcopy
+
 from matsciml.datasets.transforms import (
     DistancesTransform,
     FrameAveraging,
@@ -22,7 +25,9 @@ available_data = {
         "experiment": {
             "train_path": "/store/code/open-catalyst/data_lmdbs/is2re/all/train",
             "val_split": "/store/code/open-catalyst/data_lmdbs/is2re/all/val",
-            "normalize_kwargs": {},
+            "normalize_kwargs": json.load(
+                open("./matsciml/datasets/norms/is2re-46032samples-norms.json")
+            ),
         },
     },
     "s2ef": {
@@ -36,7 +41,9 @@ available_data = {
         "experiment": {
             "train_path": "/datasets-alt/open-catalyst/s2ef_train_2M/ref_energy_s2ef_train_2M_dgl_munch_edges/",
             "val_split": "/datasets-alt/open-catalyst/s2ef_val_id/ref_energy_munch_s2ef_val_id/",
-            "normalize_kwargs": {},
+            "normalize_kwargs": json.load(
+                open("./matsciml/datasets/norms/s2ef-200000samples-norms.json")
+            ),
         },
     },
     "lips": {
@@ -51,7 +58,9 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/lips/train",
             "val_split": "/datasets-alt/molecular-data/lips/val",
             "test_split": "/datasets-alt/molecular-data/lips/test",
-            "normalize_kwargs": {},
+            "normalize_kwargs": json.load(
+                open("./matsciml/datasets/norms/lips-1750samples-norms.json")
+            ),
         },
     },
     "carolina": {
@@ -63,10 +72,12 @@ available_data = {
             "val_split": "./matsciml/datasets/carolina_db/devset/",
         },
         "experiment": {
-            "train_path": "/store/code/open-catalyst/data_lmdbs/carolina_matdb/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/carolina_matdb/val",
-            "test_split": "/store/code/open-catalyst/data_lmdbs/carolina_matdb/test",
-            "normalize_kwargs": {},
+            "train_path": "/datasets-alt/molecular-data/carolina_matdb/train",
+            "val_split": "/datasets-alt/molecular-data/carolina_matdb/val",
+            "test_split": "/datasets-alt/molecular-data/carolina_matdb/test",
+            "normalize_kwargs": json.load(
+                open("./matsciml/datasets/norms/carolina-16080samples-norms.json")
+            ),
         },
     },
     "materials-project": {
@@ -78,10 +89,14 @@ available_data = {
             "val_split": "./matsciml/datasets/materials_project/devset-full/",
         },
         "experiment": {
-            "train_path": "/store/code/open-catalyst/data_lmdbs/mp-project/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/mp-project/val",
-            "test_split": "/store/code/open-catalyst/data_lmdbs/mp-project/test",
-            "normalize_kwargs": {},
+            "train_path": "/datasets-alt/molecular-data/materials_project/train",
+            "val_split": "/datasets-alt/molecular-data/materials_project/val",
+            "test_split": "/datasets-alt/molecular-data/materials_project/test",
+            "normalize_kwargs": json.load(
+                open(
+                    "./matsciml/datasets/norms/materials-project-11273samples-norms.json"
+                )
+            ),
         },
     },
     "nomad": {
@@ -93,10 +108,12 @@ available_data = {
             "val_split": "./matsciml/datasets/nomad/devset/",
         },
         "experiment": {
-            "train_path": "/store/code/open-catalyst/data_lmdbs/nomad/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/nomad/val",
-            "test_split": "/store/code/open-catalyst/data_lmdbs/nomad/test",
-            "normalize_kwargs": {},
+            "train_path": "/datasets-alt/molecular-data/nomad/train",
+            "val_split": "/datasets-alt/molecular-data/nomad/val",
+            "test_split": "/datasets-alt/molecular-data/nomad/test",
+            "normalize_kwargs": json.load(
+                open("./matsciml/datasets/norms/nomad-10826samples-norms.json")
+            ),
         },
     },
     "oqmd": {
@@ -108,10 +125,12 @@ available_data = {
             "val_split": "./matsciml/datasets/oqmd/devset/",
         },
         "experiment": {
-            "train_path": "/store/code/open-catalyst/data_lmdbs/oqmd/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/oqmd/val",
-            "test_split": "/store/code/open-catalyst/data_lmdbs/oqmd/test",
-            "normalize_kwargs": {},
+            "train_path": "/datasets-alt/molecular-data/oqmd/train",
+            "val_split": "/datasets-alt/molecular-data/oqmd/val",
+            "test_split": "/datasets-alt/molecular-data/oqmd/test",
+            "normalize_kwargs": json.load(
+                open("./matsciml/datasets/norms/oqmd-76666samples-norms.json")
+            ),
         },
     },
     "symmetry": {
@@ -135,8 +154,10 @@ available_data = {
             "train_path": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/train",
             "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/val",
             "test_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/test",
-            "normalize_kwargs": {},
-            "batch_size": 4
+            "normalize_kwargs": json.load(
+                open("./matsciml/datasets/norms/mp-traj-10214samples-norms.json")
+            ),
+            "batch_size": 4,
         },
     },
     "gnome": {
@@ -151,7 +172,9 @@ available_data = {
             "train_path": "/store/code/open-catalyst/data_lmdbs/gnome/train",
             "val_split": "/store/code/open-catalyst/data_lmdbs/gnome/val",
             "test_split": "/store/code/open-catalyst/data_lmdbs/gnome/test",
-            "normalize_kwargs": {},
+            "normalize_kwargs": json.load(
+                open("./matsciml/datasets/norms/gnome-26940samples-norms.json")
+            ),
         },
     },
     "generic": {"experiment": {"batch_size": 32, "num_workers": 32}},
@@ -211,8 +234,8 @@ def setup_datamodule(args):
         raise Exception("Cannot handle more than one dataset at the moment.")
     else:
         data = args.data[0]
-    dset = available_data[data]
-    dm_kwargs = available_data["generic"]["experiment"]
+    dset = deepcopy(available_data[data])
+    dm_kwargs = deepcopy(available_data["generic"]["experiment"])
     dset[args.run_type].pop("normalize_kwargs", None)
     dm_kwargs.update(dset[args.run_type])
     dm = MatSciMLDataModule(

@@ -7,6 +7,7 @@ from data_config import available_data
 from model_config import available_models
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
+from copy import deepcopy
 
 from matsciml.lightning.callbacks import CodeCarbonCallback
 
@@ -39,24 +40,24 @@ trainer_config = {
 
 def setup_callbacks(opt_target, log_path):
     callbacks = [
-        # ModelCheckpoint(monitor=opt_target, save_top_k=5),
-        # CodeCarbonCallback(
-        #     output_dir=log_path, country_iso_code="USA", measure_power_secs=1
-        # ),
-        # EarlyStopping(
-        #     patience=15,
-        #     monitor={opt_target},
-        #     mode="min",
-        #     verbose=True,
-        #     check_finite=False,
-        # ),
+        ModelCheckpoint(monitor=opt_target, save_top_k=5),
+        CodeCarbonCallback(
+            output_dir=log_path, country_iso_code="USA", measure_power_secs=1
+        ),
+        EarlyStopping(
+            patience=15,
+            monitor={opt_target},
+            mode="min",
+            verbose=True,
+            check_finite=False,
+        ),
         Timer(),
     ]
     return callbacks
 
 
 def setup_logger(log_path):
-    logger = CSVLogger(save_dir=log_path)
+    csv_logger = CSVLogger(save_dir=log_path)
     log_path.replace("/", "-")
 
     cg_wb_dir = "/store/nosnap/chem-ai/wb-logs"
@@ -64,18 +65,18 @@ def setup_logger(log_path):
     if os.path.exists(cg_wb_dir):
         save_dir = cg_wb_dir
     else:
-        save_dir = "./experiments-2024/wandb"
+        save_dir = "./experiments-2024-logs/wandb"
 
     name = log_path.replace("/", "-")[2:]
-    logger = WandbLogger(
+    wb_logger = WandbLogger(
         log_model="all",
         name=name,
         save_dir=save_dir,
-        project="debug",
+        project="dd-rebutal",
         entity="ml-logs",
         mode="online",
     )
-    return logger
+    return [csv_logger, wb_logger]
 
 
 def setup_task(args):
@@ -83,7 +84,7 @@ def setup_task(args):
         "sr": ScalarRegressionTask,
         "fr": ForceRegressionTask,
         "bc": BinaryClassificationTask,
-        "cs": CrystalSymmetryClassificationTask,
+        "csc": CrystalSymmetryClassificationTask,
         "me": MaceEnergyForceTask,
         "gffr": GradFreeForceRegressionTask,
     }
@@ -91,12 +92,14 @@ def setup_task(args):
     tasks = []
     for idx, task in enumerate(args.tasks):
         task = task_map[task]
-        task_args = available_models["generic"]
+        task_args = {}
+        task_args = deepcopy(available_models["generic"])
         # TODO: support multi data
         dset = available_data[args.data[0]]
         normalize_kwargs = dset[args.run_type].pop("normalize_kwargs", None)
         task_args.update(available_models[args.model])
-        task_args.update({"task_keys": [args.targets[idx]]})
+        if args.tasks[idx] != "csc":
+            task_args.update({"task_keys": [args.targets[idx]]})
         task_args.update({"normalize_kwargs": normalize_kwargs})
         task = task(**task_args)
         tasks.append(task)
@@ -113,7 +116,7 @@ def setup_task(args):
 
 
 def setup_trainer(args, callbacks, logger):
-    trainer_args = trainer_config["generic"]
+    trainer_args = deepcopy(trainer_config["generic"])
     trainer_args.update(trainer_config[args.run_type])
     if args.run_type == "experiment":
         trainer_args.update({"devices": args.gpus})

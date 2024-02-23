@@ -17,12 +17,13 @@ from training_utils.utils import *
 do_ip_setup()
 
 
-def main(args):
+def main(args, log_path):
+    check_args(args, data_targets)
     print("fix here main")
-    opt_target = f"val_{args.targets[0]}"
-    log_path = os.path.join(
-        "./experiments-2024/", args.run_type, args.model, "-".join(args.data)
-    )
+    if len(args.targets) > 1:
+        opt_target = "val.total_loss"
+    else:
+        opt_target = f"val_{args.targets[0]}"
     os.makedirs(log_path, exist_ok=True)
 
     callbacks = setup_callbacks(opt_target, log_path)
@@ -50,8 +51,8 @@ if __name__ == "__main__":
         choices=[
             "is2re",
             "s2ef",
-            "cmd",
-            "mp",
+            "carolina",
+            "materials-project",
             "lips",
             "nomad",
             "oqmd",
@@ -83,16 +84,49 @@ if __name__ == "__main__":
     else:
         args.run_type = "experiment"
 
-    # for idx, target in enumerate(args.targets):
-    #     for data in args.data:
-    #         if target not in data_targets[data]:
-    #             raise Exception(
-    #                 f"Requested target {target} not available in {data} dataset.",
-    #                 f"Available keys are: {data_targets[data]}",
-    #             )
+    log_path = os.path.join(
+        "./experiments-2024-logs/", args.run_type, args.model, "-".join(args.data)
+    )
 
-    main(args)
+    try:
+        main(args, log_path)
+    except Exception as e:
+        error_log(e, log_path)
 
-# python experiments/training_script.py --model faenet --data mp-traj --task sr --targets corrected_total_energy force --debug
-# MultiTask single Dataset
-# python experiments/training_script.py --model faenet --data gnome --task sr gffr --targets energy force --debug
+
+# Single Task Single Dataset
+# python experiments/training_script.py --model egnn --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
+# python experiments/training_script.py --model egnn --data oqmd --task sr --targets energy --gpus 1
+# python experiments/training_script.py --model egnn --data nomad --task sr --targets relative_energy --gpus 1
+# python experiments/training_script.py --model egnn --data carolina --task sr --targets energy --gpus 1
+
+# python experiments/training_script.py --model megnet --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
+# python experiments/training_script.py --model megnet --data oqmd --task sr --targets energy --gpus 1
+# python experiments/training_script.py --model megnet --data nomad --task sr --targets relative_energy --gpus 1
+# python experiments/training_script.py --model megnet --data carolina --task sr --targets energy --gpus 1
+
+# python experiments/training_script.py --model egnn --data materials-project --task sr --targets band_gap --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project --task sr --targets efermi --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project --task bc --targets is_stable --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project --task csc --targets symmetry_group --gpus 1
+
+# python experiments/training_script.py --model megnet --data materials-project --task sr --targets band_gap --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project --task sr --targets efermi --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project --task bc --targets is_stable --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project --task csc --targets symmetry_group --gpus 1
+
+
+# MultiTask Single Dataset
+# python experiments/training_script.py --model egnn --data materials-project --task sr sr --targets band_gap efermi --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project --task sr bc --targets band_gap is_stable --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project --task sr csc --targets band_gap symmetry_group --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project --task sr bc --targets efermi is_stable --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project --task sr csc --targets efermi symmetry_group --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project --task bc csc --targets is_stable symmetry_group --gpus 1
+
+# python experiments/training_script.py --model megnet --data materials-project --task sr sr --targets band_gap efermi --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project --task sr bc --targets band_gap is_stable --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project --task sr csc --targets band_gap symmetry_group --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project --task sr bc --targets efermi is_stable --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project --task sr csc --targets efermi symmetry_group --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project --task bc csc --targets is_stable symmetry_group --gpus 1
