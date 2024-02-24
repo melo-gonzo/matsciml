@@ -28,7 +28,10 @@ def main(args, log_path):
     if len(args.targets) > 1:
         opt_target = "val.total_loss"
     else:
-        opt_target = f"val_{args.targets[0]}"
+        if args.targets[0] == "symmetry_group":
+            opt_target = f"val_spacegroup"
+        else:
+            opt_target = f"val_{args.targets[0]}"
     os.makedirs(log_path, exist_ok=True)
 
     callbacks = setup_callbacks(opt_target, log_path)
