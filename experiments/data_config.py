@@ -188,7 +188,7 @@ available_data = {
             "normalize_kwargs": norm_dict["gnome"],
         },
     },
-    "generic": {"experiment": {"batch_size": 16, "num_workers": 32}},
+    "generic": {"experiment": {"batch_size": 16, "num_workers": 16}},
 }
 
 
