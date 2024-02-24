@@ -68,7 +68,7 @@ available_data = {
             "val_split": "./matsciml/datasets/dev-s2ef",
         },
         "experiment": {
-            "train_path": "/datasets-alt/open-catalyst/s2ef_train_2M/ref_energy_s2ef_train_2M_dgl_munch_edges/",
+            "train_path": "/datasets-alt/open-catalyst/s2ef_train_200K/ref_energy_s2ef_train_200K_dgl_munch_edges/",
             "val_split": "/datasets-alt/open-catalyst/s2ef_val_id/ref_energy_munch_s2ef_val_id/",
             "normalize_kwargs": norm_dict["s2ef"],
         },

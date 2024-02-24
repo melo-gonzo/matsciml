@@ -2845,12 +2845,14 @@ class MultiTaskLitModule(pl.LightningModule):
                     float(value),
                     on_epoch=True,
                     reduce_fx="min",
+                    sync_dist=True,
                 )
         self.log_dict(
             loss_logging,
             on_epoch=True,
             prog_bar=True,
             batch_size=batch_info["batch_size"],
+            sync_dist=True,
         )
         return losses
 

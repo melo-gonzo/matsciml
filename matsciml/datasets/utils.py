@@ -115,7 +115,16 @@ def concatenate_keys(
                 # for everything else, just return a list
                 else:
                     result = elements
-            batched_data[key] = result
+            try:
+                batched_data[key] = result
+            except Exception:
+                batched_data[key] = [s[key] for s in batch]
+                with open("batching_error.txt", "w") as f:
+                    print(key)
+                    print(batch)
+                    f.write(str(key))
+                    f.write("\n")
+                    f.write(str(batch))
     for key in ["target_types", "target_keys"]:
         if key in sample:
             batched_data[key] = sample[key]

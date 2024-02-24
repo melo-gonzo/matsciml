@@ -5,6 +5,10 @@ import socket
 import time
 import traceback
 
+import pytorch_lightning as pl
+
+pl.seed_everything(6)
+
 
 def error_log(e, log_path):
     if not os.path.exists(log_path):
