@@ -50,6 +50,43 @@ def to_numpy(t: torch.Tensor) -> np.ndarray:
     return t.cpu().detach().numpy()
 
 
+def compute_mean_std_atomic_inter_energy_and_avg_num_neighbors(
+    data_loader: torch.utils.data.DataLoader,
+    atomic_energies: np.ndarray,
+) -> tuple[float, float]:
+    atomic_energies_fn = AtomicEnergiesBlock(atomic_energies=atomic_energies)
+
+    avg_atom_inter_es_list = []
+    avg_num_neighbors_list = []
+    for batch in data_loader:
+        graph = batch.get("graph")
+        atomic_numbers: torch.Tensor = getattr(graph, "atomic_numbers")
+        z_table = tools.get_atomic_number_table_from_zs(atomic_numbers.numpy())
+
+        indices = atomic_numbers_to_indices(atomic_numbers, z_table=z_table)
+        node_attrs = to_one_hot(
+            torch.tensor(indices, dtype=torch.long).unsqueeze(-1),
+            num_classes=len(z_table),
+        )
+        node_e0 = atomic_energies_fn(node_attrs)
+        graph_e0s = scatter_sum(
+            src=node_e0,
+            index=graph.batch,
+            dim=-1,
+            dim_size=graph.num_graphs,
+        )
+        graph_sizes = graph.ptr[1:] - graph.ptr[:-1]
+        avg_atom_inter_es_list.append(
+            (batch["energy"] - graph_e0s) / graph_sizes,
+        )  # {[n_graphs], }
+        avg_num_neighbors_list.append(graph.edge_index.numel() / len(atomic_numbers))
+
+    avg_atom_inter_es = torch.cat(avg_atom_inter_es_list)  # [total_n_graphs]
+    mean = to_numpy(torch.mean(avg_atom_inter_es)).item()
+    std = to_numpy(torch.std(avg_atom_inter_es)).item()
+    avg_num_neighbors = torch.mean(torch.Tensor(avg_num_neighbors_list))
+    return mean, std, avg_num_neighbors
+
 ### Gnome
 # pre_compute_params = {
 #     "mean": 64690.4765625,

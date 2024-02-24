@@ -6,7 +6,7 @@ import functools
 from abc import abstractmethod
 from pathlib import Path
 from random import sample
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -177,7 +177,16 @@ class BaseLMDBDataset(Dataset):
             # the data sequentially
             if self.transforms:
                 for transform in self.transforms:
-                    data = transform(data)
+                    try:
+                        data = transform(data)
+                    except Exception:
+                        import traceback
+                        with open("transform_fail.txt", "w") as f:
+                            f.write(str(keys))
+                        print(traceback.format_exc())
+                        import os
+
+                        os._exit(0)
         else:
             # if preprocessed, we bypass all transformation steps
             data = utils.get_data_from_index(*keys, self._envs)

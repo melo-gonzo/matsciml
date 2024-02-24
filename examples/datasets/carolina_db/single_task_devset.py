@@ -64,9 +64,19 @@ dm = MatSciMLDataModule.from_devset(
             ),
         ],
     },
+    batch_size=2,
 )
 
+from pytorch_lightning.loggers import CSVLogger
+
+from matsciml.lightning.callbacks import Timer
+
 # run 10 steps for funsies
-trainer = pl.Trainer(fast_dev_run=10, enable_checkpointing=False, logger=False)
+trainer = pl.Trainer(
+    callbacks=[Timer()],
+    logger=CSVLogger(save_dir="./TEMP"),
+    log_every_n_steps=5,
+    max_epochs=1,
+)
 
 trainer.fit(task, datamodule=dm)
