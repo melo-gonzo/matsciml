@@ -136,5 +136,13 @@ if __name__ == "__main__":
 
 
 # Multi Data Multi Task
-# python experiments/training_script.py --model egnn --data materials-project nomad --task sr sr --targets formation_energy_per_atom relative_energy --gpus 1
 
+# python experiments/training_script.py --model egnn --data materials-project nomad --task sr sr --targets formation_energy_per_atom relative_energy --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project s2ef --task sr sr --targets formation_energy_per_atom energy --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project is2re --task sr sr --targets formation_energy_per_atom energy_init --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project lips --task sr sr --targets formation_energy_per_atom energy --gpus 1
+
+# python experiments/training_script.py --model megnet --data materials-project nomad --task sr sr --targets formation_energy_per_atom relative_energy --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project s2ef --task sr sr --targets formation_energy_per_atom energy --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project is2re --task sr sr --targets formation_energy_per_atom energy_init --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project lips --task sr sr --targets formation_energy_per_atom energy --gpus 1
