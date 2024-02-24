@@ -55,7 +55,7 @@ def setup_logger(log_path):
     csv_logger = CSVLogger(save_dir=log_path)
     log_path.replace("/", "-")
 
-    cg_wb_dir = "/store/nosnap/chem-ai/wb-logs"
+    cg_wb_dir = "/workspace/nosnap/matsciml/dd_rebuttal/wb-logs"
 
     if os.path.exists(cg_wb_dir):
         save_dir = cg_wb_dir
@@ -68,7 +68,7 @@ def setup_logger(log_path):
         name=name,
         save_dir=save_dir,
         project="dd-rebutal",
-        entity="ml-logs",
+        # entity="ml-logs",
         mode="online",
     )
     return [csv_logger, wb_logger]

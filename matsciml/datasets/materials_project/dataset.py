@@ -62,9 +62,6 @@ def item_from_structure(data: Any, *keys: str) -> Any:
 class MaterialsProjectDataset(PointCloudDataset):
     __devset__ = Path(__file__).parents[0].joinpath("devset")
 
-    def raw_sample(self, lmdb_index, subindex):
-        return super().data_from_key(lmdb_index, subindex)
-
     def index_to_key(self, index: int) -> tuple[int]:
         """
         Method that maps a global index value to a pair of indices.
@@ -248,47 +245,39 @@ class MaterialsProjectDataset(PointCloudDataset):
         self._parse_structure(data, return_dict)
         self._parse_symmetry(data, return_dict)
         # assume every other key are targets
-        not_targets = {
-            "structure",
-            "symmetry",
-            "fields_not_requested",
-            "formula_pretty",
-        }
-        if data.get("fields_not_requested", None) is None:
-            fnr = ["@class", "@module"]
-            not_targets.update(fnr)
-        else:
-            not_targets.update(data["fields_not_requested"])
-        target_keys = getattr(self, "_target_keys", None)
+        not_targets = set(
+            [
+                "structure",
+                "symmetry",
+                "fields_not_requested",
+                "formula_pretty",
+                "magmom",
+            ]
+            + data["fields_not_requested"],
+        )
+        # target_keys = getattr(self, "_target_keys", None)
         target_keys = self.target_key_list
         # in the event we're getting data for the first time
         if not target_keys:
             target_keys = set(data.keys()).difference(not_targets)
             # cache the result
             target_keys = list(target_keys)
-        data["energy"] = data["corrected_total_energy"]
-        return_dict["energy"] = data["corrected_total_energy"]
-        data.pop("corrected_total_energy")
-        target_keys = ["energy", "force"]
         targets = {key: self._standardize_values(data[key]) for key in target_keys}
         return_dict["targets"] = targets
         # compress all the targets into a single tensor for convenience
         target_types = {"classification": [], "regression": []}
-
         for key in target_keys:
-            # item = targets.get(key)
-            # if key in ["force", "magmom"]:
-            target_types["regression"].append(key)
-            # if isinstance(item, Iterable):
-            #     # check if the data is numeric first
-            #     if isinstance(item[0], (float, int)):
-            #         target_types["regression"].append(key)
-            # else:
-            #     if isinstance(item, (float, int)):
-            #         target_type = (
-            #             "classification" if isinstance(item, int) else "regression"
-            #         )
-            #         target_types[target_type].append(key)
+            item = targets.get(key)
+            if isinstance(item, Iterable):
+                # check if the data is numeric first
+                if isinstance(item[0], (float, int)) or torch.is_tensor(item):
+                    target_types["regression"].append(key)
+            else:
+                if isinstance(item, (float, int)):
+                    target_type = (
+                        "classification" if isinstance(item, int) else "regression"
+                    )
+                    target_types[target_type].append(key)
         return_dict["target_types"] = target_types
         self.target_keys = target_types
         return return_dict
