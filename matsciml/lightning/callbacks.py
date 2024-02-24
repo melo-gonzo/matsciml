@@ -544,9 +544,11 @@ class Timer(Callback):
     def __init__(self) -> None:
         super().__init__()
 
+    @rank_zero_only
     def epoch_start(self, stage: str) -> None:
         setattr(self, f"{stage}_epoch_start_time", perf_counter())
 
+    @rank_zero_only
     def epoch_end(self, stage: str) -> None:
         setattr(self, f"{stage}_epoch_end_time", perf_counter())
         runtime = getattr(self, f"{stage}_epoch_end_time") - getattr(
@@ -556,9 +558,11 @@ class Timer(Callback):
 
         self.log(f"timer/{stage}_epoch_time", runtime)
 
+    @rank_zero_only
     def batch_start(self, stage: str) -> None:
         setattr(self, f"{stage}_batch_start_time", perf_counter())
 
+    @rank_zero_only
     def batch_end(self, stage: str) -> None:
         setattr(self, f"{stage}_batch_end_time", perf_counter())
         runtime = getattr(self, f"{stage}_batch_end_time") - getattr(
@@ -567,23 +571,23 @@ class Timer(Callback):
         )
         self.log(f"timer/{stage}_batch_time", runtime)
 
+    @rank_zero_only
     def on_fit_start(self, *args, **kwargs) -> None:
         self.fit_start = perf_counter()
-
-    def on_fit_end(self, *args, **kwargs) -> None:
-        self.fit_end = perf_counter()
-        self.log("timer/fit_time", self.fit_end - self.fit_start)
 
     """
     Epoch start
     """
 
+    @rank_zero_only
     def on_train_epoch_start(self, *args, **kwargs) -> None:
         self.epoch_start("train")
 
+    @rank_zero_only
     def on_validation_epoch_start(self, *args, **kwargs) -> None:
         self.epoch_start("validation")
 
+    @rank_zero_only
     def on_test_epoch_start(self, *args, **kwargs) -> None:
         self.epoch_start("test")
 
@@ -591,12 +595,15 @@ class Timer(Callback):
     Epoch end
     """
 
+    @rank_zero_only
     def on_train_epoch_end(self, *args, **kwargs) -> None:
         self.epoch_end("train")
 
+    @rank_zero_only
     def on_validation_epoch_end(self, *args, **kwargs) -> None:
         self.epoch_end("validation")
 
+    @rank_zero_only
     def on_test_epoch_end(self, *args, **kwargs) -> None:
         self.epoch_end("test")
 
@@ -604,12 +611,15 @@ class Timer(Callback):
     Batch start
     """
 
+    @rank_zero_only
     def on_train_batch_start(self, *args, **kwargs) -> None:
         self.batch_start("train")
 
+    @rank_zero_only
     def on_validation_batch_start(self, *args, **kwargs) -> None:
         self.batch_start("validation")
 
+    @rank_zero_only
     def on_test_batch_start(self, *args, **kwargs) -> None:
         self.batch_start("test")
 
@@ -617,12 +627,15 @@ class Timer(Callback):
     Batch end
     """
 
+    @rank_zero_only
     def on_train_batch_end(self, batch_idx: int, *args, **kwargs) -> None:
         self.batch_end("train")
 
+    @rank_zero_only
     def on_validation_batch_end(self, batch_idx: int, *args, **kwargs) -> None:
         self.batch_end("validation")
 
+    @rank_zero_only
     def on_test_batch_end(self, batch_idx: int, *args, **kwargs) -> None:
         self.batch_end("test")
 
@@ -754,6 +767,7 @@ if package_registry["codecarbon"]:
             self.tracker.start()
             self.tracker.start_task("predict")
 
+        @rank_zero_only
         def on_test_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
             self.tracker.start()
             self.tracker.start_task("test")
