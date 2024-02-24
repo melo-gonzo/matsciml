@@ -76,6 +76,7 @@ def setup_logger(log_path):
         log_model="all",
         name=name,
         save_dir=save_dir,
+        entity='smiret',
         project="dd-rebutal",
         mode="online",
     )
