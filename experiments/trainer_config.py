@@ -10,12 +10,15 @@ from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
 
 from matsciml.lightning.callbacks import Timer
-from matsciml.models.base import (BinaryClassificationTask,
-                                  CrystalSymmetryClassificationTask,
-                                  ForceRegressionTask,
-                                  GradFreeForceRegressionTask,
-                                  MaceEnergyForceTask, MultiTaskLitModule,
-                                  ScalarRegressionTask)
+from matsciml.models.base import (
+    BinaryClassificationTask,
+    CrystalSymmetryClassificationTask,
+    ForceRegressionTask,
+    GradFreeForceRegressionTask,
+    MaceEnergyForceTask,
+    MultiTaskLitModule,
+    ScalarRegressionTask,
+)
 
 trainer_config = {
     "debug": {
@@ -29,7 +32,10 @@ trainer_config = {
         "accelerator": "gpu",
         "strategy": "ddp_find_unused_parameters_true",
     },
-    "generic": {"min_epochs": 15, "max_epochs": 100},
+    "generic": {
+        "min_epochs": 15,
+        "max_epochs": 100,
+    },
 }
 
 
@@ -41,7 +47,7 @@ def setup_callbacks(opt_target, log_path):
         # ),
         EarlyStopping(
             patience=15,
-            monitor={opt_target},
+            monitor=opt_target,
             mode="min",
             verbose=True,
             check_finite=False,
@@ -55,10 +61,13 @@ def setup_logger(log_path):
     csv_logger = CSVLogger(save_dir=log_path)
     log_path.replace("/", "-")
 
-    cg_wb_dir = "/workspace/nosnap/matsciml/dd_rebuttal/wb-logs"
+    cg_wb_dir = "/store/nosnap/chem-ai/wb-logs/"
+    sm_wb_dir = "/workspace/nosnap/matsciml/dd_rebuttal/wb-logs"
 
     if os.path.exists(cg_wb_dir):
         save_dir = cg_wb_dir
+    elif os.path.exists(sm_wb_dir):
+        save_dir = sm_wb_dir
     else:
         save_dir = "./experiments-2024-logs/wandb"
 
