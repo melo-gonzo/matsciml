@@ -137,6 +137,8 @@ def setup_trainer(args, callbacks, logger):
     if args.run_type == "experiment":
         trainer_args.update({"devices": args.gpus})
 
-    trainer = pl.Trainer(callbacks=callbacks, logger=logger, **trainer_args)
+    trainer = pl.Trainer(
+        callbacks=callbacks, enable_checkpointing=False, logger=logger, **trainer_args
+    )
 
     return trainer

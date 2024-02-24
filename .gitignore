@@ -9,6 +9,8 @@ lightning_logs
 debug_scripts
 experiments-2024-logs
 launch_scripts
+debug.py
+ip_address.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

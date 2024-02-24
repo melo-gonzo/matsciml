@@ -188,7 +188,7 @@ available_data = {
             "normalize_kwargs": norm_dict["gnome"],
         },
     },
-    "generic": {"experiment": {"batch_size": 16, "num_workers": 32}},
+    "generic": {"experiment": {"batch_size": 16, "num_workers": 16}},
 }
 
 
@@ -276,7 +276,7 @@ def setup_datamodule(args):
             train_dataset=train_dset,
             val_dataset=val_dset,
             batch_size=dm_kwargs["batch_size"],
-            num_workers=0,  # dm_kwargs["num_workers"],
+            num_workers=dm_kwargs["num_workers"],
         )
     return dm
 
