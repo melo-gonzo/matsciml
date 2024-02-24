@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sys
 
-cg_msl = "/store/code/open-catalyst/public-repo/matsciml"
+cg_msl = "/workspace/ai-mat-top/matsciml_top/forks/carmelo_matsciml/"
 
 if os.path.exists(cg_msl):
     sys.path.append(cg_msl)

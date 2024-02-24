@@ -104,7 +104,7 @@ def atomic_numbers_to_indices(
     z_table: AtomicNumberTable,
 ) -> np.ndarray:
     to_index_fn = np.vectorize(z_table.z_to_index)
-    return to_index_fn(atomic_numbers)
+    return to_index_fn(atomic_numbers.cpu())
 
 
 def get_optimizer(

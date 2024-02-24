@@ -145,7 +145,7 @@ class AtomicEnergiesBlock(torch.nn.Module):
         self,
         x: torch.Tensor,  # one-hot of elements [..., n_elements]
     ) -> torch.Tensor:  # [..., ]
-        return torch.matmul(x, self.atomic_energies)
+        return torch.matmul(x, self.atomic_energies.to(x.device))
 
     def __repr__(self):
         formatted_energies = ", ".join([f"{x:.4f}" for x in self.atomic_energies])

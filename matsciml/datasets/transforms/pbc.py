@@ -37,6 +37,7 @@ class PeriodicPropertiesTransform(AbstractDataTransform):
     def __call__(self, data: DataDict) -> DataDict:
         for key in ["atomic_numbers", "pos"]:
             assert key in data, f"{key} missing from data sample!"
+
         if "cell" in data:
             # squeeze is used to make sure we remove empty dims
             lattice = Lattice(data["cell"].squeeze())

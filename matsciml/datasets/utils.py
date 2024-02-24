@@ -56,7 +56,10 @@ def concatenate_keys(
     sample = batch[0]
     batched_data = {}
     for key, value in sample.items():
-        if key not in ["target_types", "target_keys"]:
+        if key == "pbc":
+            result = [s[key] for s in batch]
+            batched_data[key] = result
+        elif key not in ["target_types", "target_keys"]:
             if isinstance(value, dict):
                 # apply function recursively on dictionaries
                 result = concatenate_keys([s[key] for s in batch])
@@ -737,7 +740,14 @@ def calculate_periodic_shifts(
         "pos": frac_coords,
     }
     # now calculate offsets based on each image for a lattice
-    return_dict["offsets"] = einsum(return_dict["images"], cell, "v i, n i j -> v j")
+    if all_images != []:
+        return_dict["offsets"] = einsum(
+            return_dict["images"],
+            cell,
+            "v i, n i j -> v j",
+        )
+    else:
+        return_dict["offsets"] = 0
     src, dst = return_dict["src_nodes"], return_dict["dst_nodes"]
     # this corresponds to distances between nodes based on unit cell images
     return_dict["unit_offsets"] = (

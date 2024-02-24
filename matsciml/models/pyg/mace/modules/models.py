@@ -292,6 +292,7 @@ class ScaleShiftMACE(MACE):
     ) -> dict[str, torch.Tensor | None]:
         # Setup
         data["positions"].requires_grad_(True)
+        current_device = data["batch"].device
 
         num_graphs = data["ptr"].numel() - 1
         displacement = torch.zeros(
@@ -317,18 +318,18 @@ class ScaleShiftMACE(MACE):
         # Atomic energies
         node_e0 = self.atomic_energies_fn(data["node_attrs"])
         e0 = scatter_sum(
-            src=node_e0,
+            src=node_e0.to(current_device),
             index=data["batch"],
             dim=-1,
             dim_size=num_graphs,
         )  # [n_graphs,]
 
         # Embeddings
-        node_feats = self.node_embedding(data["node_attrs"])
+        node_feats = self.node_embedding(data["node_attrs"].to(current_device))
         vectors, lengths = get_edge_vectors_and_lengths(
-            positions=data["positions"],
-            edge_index=data["edge_index"],
-            shifts=data["shifts"],
+            positions=data["positions"].to(current_device),
+            edge_index=data["edge_index"].to(current_device),
+            shifts=data["shifts"].to(current_device),
         )
         edge_attrs = self.spherical_harmonics(vectors)
         edge_feats = self.radial_embedding(lengths)
@@ -341,16 +342,16 @@ class ScaleShiftMACE(MACE):
             self.readouts,
         ):
             node_feats, sc = interaction(
-                node_attrs=data["node_attrs"],
+                node_attrs=data["node_attrs"].to(current_device),
                 node_feats=node_feats,
                 edge_attrs=edge_attrs,
                 edge_feats=edge_feats,
-                edge_index=data["edge_index"],
+                edge_index=data["edge_index"].to(current_device),
             )
             node_feats = product(
                 node_feats=node_feats,
                 sc=sc,
-                node_attrs=data["node_attrs"],
+                node_attrs=data["node_attrs"].to(current_device),
             )
             node_es_list.append(readout(node_feats).squeeze(-1))  # {[n_nodes, ], }
 
@@ -371,12 +372,12 @@ class ScaleShiftMACE(MACE):
 
         # Add E_0 and (scaled) interaction energy
         total_energy = e0 + inter_e
-        node_energy = node_e0 + node_inter_es
+        node_energy = node_e0.to(current_device) + node_inter_es.to(current_device)
         forces, virials, stress = get_outputs(
             energy=total_energy,
-            positions=data["positions"],
+            positions=data["positions"].to(current_device),
             displacement=displacement,
-            cell=data["cell"],
+            cell=data["cell"].to(current_device),
             training=self.training,
             compute_force=compute_force,
             compute_virials=compute_virials,
@@ -420,7 +421,10 @@ class ScaleShiftMACE(MACE):
             "graph" in batch
         ), f"Model {self.__class__.__name__} expects graph structures, but 'graph' key was not found in batch."
         graph = batch.get("graph")
-        pbc = batch.get("pbc")
+        pbc = batch.get(
+            "pbc",
+            [torch.Tensor([1, 1, 1])] * (len(batch["graph"]["ptr"]) - 1),
+        )
         data = {"cell": batch.get("cell"), "energy": batch.get("energy")}
 
         assert isinstance(
@@ -448,20 +452,25 @@ class ScaleShiftMACE(MACE):
         data["weights"] = torch.ones((data["positions"].shape[0],))
 
         atomic_numbers: torch.Tensor = getattr(graph, "atomic_numbers")
-        z_table = tools.get_atomic_number_table_from_zs(atomic_numbers.numpy())
+        z_table = tools.get_atomic_number_table_from_zs(atomic_numbers.cpu().numpy())
 
         indices = atomic_numbers_to_indices(atomic_numbers, z_table=z_table)
         data["node_attrs"] = to_one_hot(
             torch.tensor(indices, dtype=torch.long).unsqueeze(-1),
-            num_classes=len(z_table),
+            num_classes=100,
         )
 
         shifts = []
         edge_index = []
         unit_shifts = []
         b_sz = data["ptr"].numel() - 1
-        pos_k = data["positions"].reshape(b_sz, -1, 3)
+        pos_k = torch.split(
+            data["positions"],
+            tuple(_.item() for _ in data["ptr"][1:] - data["ptr"][:-1]),
+            dim=0,
+        )
         cell_k = data["cell"].reshape(b_sz, 3, 3)
+        all_before = 0
         for k in range(b_sz):
             pbc_tensor = pbc[k] == 1
             pbc_tuple = (
@@ -470,13 +479,16 @@ class ScaleShiftMACE(MACE):
                 pbc_tensor[2].item(),
             )
             edge_index_k, shifts_k, unit_shifts_k = get_neighborhood(
-                pos_k[k].numpy(),
+                pos_k[k].cpu().numpy(),
                 cutoff=self.r_max.item(),
                 pbc=pbc_tuple,
-                cell=cell_k[k],
+                cell=cell_k[k].cpu(),
             )
             shifts += [torch.Tensor(shifts_k)]
-            edge_index += [(torch.Tensor(edge_index_k) + 83 * k).T.to(torch.int64)]
+            edge_index += [
+                (torch.Tensor(edge_index_k) + all_before).T.to(torch.int64),
+            ]
+            all_before += pos_k[k].size(0)
             unit_shifts += [torch.Tensor(unit_shifts_k)]
 
         data["shifts"] = torch.concatenate(shifts)

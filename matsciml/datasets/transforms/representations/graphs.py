@@ -255,8 +255,9 @@ class PointCloudToGraphTransform(RepresentationTransform):
                     self.edges_from_dist(dist_mat, self.cutoff_dist),
                 )
             # if not in the expected shape, transpose and reformat layout
-            if edge_index.size(0) != 2 and edge_index.size(1) == 2:
-                edge_index = edge_index.T.contiguous()
+            if len(edge_index) > 0:
+                if edge_index.size(0) != 2 and edge_index.size(1) == 2:
+                    edge_index = edge_index.T.contiguous()
             g = PyGGraph(edge_index=edge_index, pos=coords)
             g.atomic_numbers = atom_numbers
             # run through potential periodic data as well. The two
