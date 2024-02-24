@@ -276,7 +276,7 @@ def setup_datamodule(args):
             train_dataset=train_dset,
             val_dataset=val_dset,
             batch_size=dm_kwargs["batch_size"],
-            num_workers=0,  # dm_kwargs["num_workers"],
+            num_workers=dm_kwargs["num_workers"],
         )
     return dm
 
