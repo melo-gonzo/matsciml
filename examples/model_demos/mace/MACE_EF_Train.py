@@ -42,6 +42,8 @@ pl.seed_everything(6)
 atomic_energies = fetch_ionization_energies(degree=list(range(1, 100))).sum(axis=1)
 atomic_energies *= -1
 atomic_energies = torch.Tensor(list(atomic_energies[:100].to_dict().values()))
+# atomic_energies = torch.ones_like(atomic_energies)
+
 
 
 def to_numpy(t: torch.Tensor) -> np.ndarray:
@@ -71,16 +73,27 @@ def to_numpy(t: torch.Tensor) -> np.ndarray:
 
 
 ### Combined Datasets
+# pre_compute_params = {
+#     "mean": 59693.9375,
+#     "std": 45762.0234375,
+#     "avg_num_neighbors": 34.1558,
+# }
+
+
+### Combined Datasets
 pre_compute_params = {
-    "mean": 59693.9375,
-    "std": 45762.0234375,
+    "mean": 1000,
+    "std": 1,
     "avg_num_neighbors": 34.1558,
 }
+
 DATASET = "multi"
 # TRAIN_PATH = "/store/code/open-catalyst/data_lmdbs/mp-traj-gnome-combo/train"
 # VAL_PATH = "/store/code/open-catalyst/data_lmdbs/mp-traj-gnome-combo/val"
-TRAIN_PATH = "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/train"
-VAL_PATH = "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/val"
+# TRAIN_PATH = "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/train"
+# VAL_PATH = "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/val"
+TRAIN_PATH = "/datasets-alt/molecular-data/mat_traj/mp-traj-full/train"
+VAL_PATH = "/datasets-alt/molecular-data/mat_traj/mp-traj-full/val"
 
 
 def main(args):
@@ -155,6 +168,7 @@ def main(args):
         loss_coeff={"energy": 1.0, "force": 10.0},
         lr=0.005,
         weight_decay=1e-8,
+
     )
 
     # Print model
@@ -162,13 +176,13 @@ def main(args):
 
     # Start Training
     # logger = CSVLogger(save_dir="./mace_experiments")
-    wandb.init(project='mace_debug', entity='m3rg', mode='online', )
+    wandb.init(project='mace_debug-full-traj-128', entity='m3rg', mode='online', )
     logger = WandbLogger(log_model="all", name=f"mace-{DATASET}-data", save_dir='/workspace/nosnap/matsciml/mace_train')
 
     mc = ModelCheckpoint(monitor="val_force", save_top_k=5)
 
     trainer = pl.Trainer(
-        max_epochs=50,
+        max_epochs=200,
         min_epochs=20,
         log_every_n_steps=100,
         accelerator="gpu",
@@ -179,6 +193,8 @@ def main(args):
             GradientCheckCallback(),
             mc,
         ],
+        gradient_clip_val=100, 
+        gradient_clip_algorithm="value"
     )
 
     trainer.fit(task, datamodule=dm)
@@ -209,7 +225,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--hidden_irreps",
         type=str,
-        default="16x0e+16x1o+16x2e",
+        default="128x0e+128x1o+128x2e",
         help="Hidden Irrep Shape",
     )
     parser.add_argument(
