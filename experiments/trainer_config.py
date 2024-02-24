@@ -107,8 +107,10 @@ def setup_task(args):
         task = task_map[task]
         task_args = {}
         task_args = deepcopy(available_models["generic"])
-        # TODO: support multi data
-        dset = available_data[args.data[0]]
+        if len(args.data) > 1:
+            dset = deepcopy(available_data[args.data[idx]])
+        else:
+            dset = deepcopy(available_data[args.data[0]])
         normalize_kwargs = dset[args.run_type].pop("normalize_kwargs", None)
         task_args.update(available_models[args.model])
         if args.tasks[idx] != "csc":

@@ -1,17 +1,48 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from copy import deepcopy
 
 from matsciml.datasets import *
-from matsciml.datasets.transforms import (DistancesTransform, FrameAveraging,
-                                          GraphVariablesTransform,
-                                          MGLDataTransform,
-                                          PeriodicPropertiesTransform,
-                                          PointCloudToGraphTransform)
-from matsciml.lightning.data_utils import (MatSciMLDataModule, MultiDataModule,
-                                           MultiDataset)
+from matsciml.datasets.transforms import (
+    DistancesTransform,
+    FrameAveraging,
+    GraphVariablesTransform,
+    MGLDataTransform,
+    PeriodicPropertiesTransform,
+    PointCloudToGraphTransform,
+)
+from matsciml.lightning.data_utils import (
+    MatSciMLDataModule,
+    MultiDataModule,
+    MultiDataset,
+)
+
+data_keys = [
+    "is2re",
+    "s2ef",
+    "lips",
+    "carolina",
+    "materials-project",
+    "nomad",
+    "oqmd",
+    "symmetry",
+    "mp-traj",
+    "gnome",
+    "generic",
+]
+
+norm_files = os.listdir("./matsciml/datasets/norms")
+norm_dict = {}
+for data_name in data_keys:
+    for file in norm_files:
+        if data_name in file:
+            norm_dict[data_name] = json.load(
+                open(os.path.join("./matsciml/datasets/norms", file))
+            )
+
 
 available_data = {
     "is2re": {
@@ -24,10 +55,8 @@ available_data = {
         },
         "experiment": {
             "train_path": "/store/code/open-catalyst/data_lmdbs/is2re/all/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/is2re/all/val",
-            "normalize_kwargs": json.load(
-                open("./matsciml/datasets/norms/is2re-46032samples-norms.json")
-            ),
+            "val_split": "/store/code/open-catalyst/data_lmdbs/is2re/all/val_id",
+            "normalize_kwargs": norm_dict["is2re"],
         },
     },
     "s2ef": {
@@ -41,9 +70,7 @@ available_data = {
         "experiment": {
             "train_path": "/datasets-alt/open-catalyst/s2ef_train_2M/ref_energy_s2ef_train_2M_dgl_munch_edges/",
             "val_split": "/datasets-alt/open-catalyst/s2ef_val_id/ref_energy_munch_s2ef_val_id/",
-            "normalize_kwargs": json.load(
-                open("./matsciml/datasets/norms/s2ef-200000samples-norms.json")
-            ),
+            "normalize_kwargs": norm_dict["s2ef"],
         },
     },
     "lips": {
@@ -58,9 +85,7 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/lips/train",
             "val_split": "/datasets-alt/molecular-data/lips/val",
             "test_split": "/datasets-alt/molecular-data/lips/test",
-            "normalize_kwargs": json.load(
-                open("./matsciml/datasets/norms/lips-1750samples-norms.json")
-            ),
+            "normalize_kwargs": norm_dict["lips"],
         },
     },
     "carolina": {
@@ -75,9 +100,7 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/carolina_matdb/train",
             "val_split": "/datasets-alt/molecular-data/carolina_matdb/val",
             "test_split": "/datasets-alt/molecular-data/carolina_matdb/test",
-            "normalize_kwargs": json.load(
-                open("./matsciml/datasets/norms/carolina-16080samples-norms.json")
-            ),
+            "normalize_kwargs": norm_dict["carolina"],
         },
     },
     "materials-project": {
@@ -92,11 +115,7 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/materials_project/train",
             "val_split": "/datasets-alt/molecular-data/materials_project/val",
             "test_split": "/datasets-alt/molecular-data/materials_project/test",
-            "normalize_kwargs": json.load(
-                open(
-                    "./matsciml/datasets/norms/materials-project-11273samples-norms.json"
-                )
-            ),
+            "normalize_kwargs": norm_dict["materials-project"],
         },
     },
     "nomad": {
@@ -111,9 +130,7 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/nomad/train",
             "val_split": "/datasets-alt/molecular-data/nomad/val",
             "test_split": "/datasets-alt/molecular-data/nomad/test",
-            "normalize_kwargs": json.load(
-                open("./matsciml/datasets/norms/nomad-10826samples-norms.json")
-            ),
+            "normalize_kwargs": norm_dict["nomad"],
         },
     },
     "oqmd": {
@@ -128,9 +145,7 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/oqmd/train",
             "val_split": "/datasets-alt/molecular-data/oqmd/val",
             "test_split": "/datasets-alt/molecular-data/oqmd/test",
-            "normalize_kwargs": json.load(
-                open("./matsciml/datasets/norms/oqmd-76666samples-norms.json")
-            ),
+            "normalize_kwargs": norm_dict["oqmd"],
         },
     },
     "symmetry": {
@@ -154,9 +169,7 @@ available_data = {
             "train_path": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/train",
             "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/val",
             "test_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/test",
-            "normalize_kwargs": json.load(
-                open("./matsciml/datasets/norms/mp-traj-10214samples-norms.json")
-            ),
+            "normalize_kwargs": norm_dict["mp-traj"],
             "batch_size": 4,
         },
     },
@@ -172,13 +185,12 @@ available_data = {
             "train_path": "/store/code/open-catalyst/data_lmdbs/gnome/train",
             "val_split": "/store/code/open-catalyst/data_lmdbs/gnome/val",
             "test_split": "/store/code/open-catalyst/data_lmdbs/gnome/test",
-            "normalize_kwargs": json.load(
-                open("./matsciml/datasets/norms/gnome-26940samples-norms.json")
-            ),
+            "normalize_kwargs": norm_dict["gnome"],
         },
     },
     "generic": {"experiment": {"batch_size": 16, "num_workers": 32}},
 }
+
 
 transforms = {
     "egnn": [
