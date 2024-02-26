@@ -106,6 +106,11 @@ if __name__ == "__main__":
 
 
 # Single Task Single Dataset
+
+# python experiments/training_script.py --model gala --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
+
+
+
 # python experiments/training_script.py --model egnn --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
 # python experiments/training_script.py --model egnn --data oqmd --task sr --targets energy --gpus 1
 # python experiments/training_script.py --model egnn --data nomad --task sr --targets relative_energy --gpus 1
@@ -147,10 +152,10 @@ if __name__ == "__main__":
 
 # python experiments/training_script.py --model egnn --data materials-project nomad --task sr sr --targets formation_energy_per_atom relative_energy --gpus 1
 # python experiments/training_script.py --model egnn --data materials-project s2ef --task sr sr --targets formation_energy_per_atom energy --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project is2re --task sr sr --targets formation_energy_per_atom energy_init --gpus 1
+# python experiments/training_script.py --model egnn --data materials-project is2re --task sr sr --targets formation_energy_per_atom energy_relaxed --gpus 1
 # python experiments/training_script.py --model egnn --data materials-project lips --task sr sr --targets formation_energy_per_atom energy --gpus 1
 
 # python experiments/training_script.py --model megnet --data materials-project nomad --task sr sr --targets formation_energy_per_atom relative_energy --gpus 1
 # python experiments/training_script.py --model megnet --data materials-project s2ef --task sr sr --targets formation_energy_per_atom energy --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project is2re --task sr sr --targets formation_energy_per_atom energy_init --gpus 1
+# python experiments/training_script.py --model megnet --data materials-project is2re --task sr sr --targets formation_energy_per_atom energy_relaxed --gpus 1
 # python experiments/training_script.py --model megnet --data materials-project lips --task sr sr --targets formation_energy_per_atom energy --gpus 1
