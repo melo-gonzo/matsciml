@@ -92,7 +92,7 @@ if __name__ == "__main__":
         args.run_type = "experiment"
 
     log_path = os.path.join(
-        "./experiments-2024-logs/",
+        "./experiments-2024-logs-full-runs/",
         args.run_type,
         args.model,
         "-".join(args.data),
