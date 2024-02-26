@@ -3,7 +3,14 @@ from __future__ import annotations
 from torch.nn import LayerNorm, SiLU
 
 from matsciml.datasets.utils import element_types
-from matsciml.models import FAENet, M3GNet, MEGNet, PLEGNNBackbone, TensorNet
+from matsciml.models import (
+    FAENet,
+    M3GNet,
+    MEGNet,
+    PLEGNNBackbone,
+    TensorNet,
+    GalaPotential,
+)
 
 available_models = {
     "egnn": {
@@ -52,6 +59,28 @@ available_models = {
             "tag_hidden_channels": 0,
         },
         "output_kwargs": {"lazy": False, "input_dim": 128, "hidden_dim": 128},
+    },
+    "gala": {
+        "encoder_class": GalaPotential,
+        "encoder_kwargs": {
+            "D_in": 100,
+            "depth": 2,
+            "hidden_dim": 64,
+            "merge_fun": "concat",
+            "join_fun": "concat",
+            "invariant_mode": "full",
+            "covariant_mode": "full",
+            "include_normalized_products": True,
+            "invar_value_normalization": "momentum",
+            "eqvar_value_normalization": "momentum_layer",
+            "value_normalization": "layer",
+            "score_normalization": "layer",
+            "block_normalization": "layer",
+            "equivariant_attention": False,
+            "tied_attention": True,
+            "encoder_only": True,
+        },
+        "output_kwargs": {"lazy": False, "input_dim": 64, "hidden_dim": 64},
     },
     "m3gnet": {
         "encoder_class": M3GNet,

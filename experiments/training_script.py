@@ -106,6 +106,11 @@ if __name__ == "__main__":
 
 
 # Single Task Single Dataset
+
+# python experiments/training_script.py --model gala --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
+
+
+
 # python experiments/training_script.py --model egnn --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
 # python experiments/training_script.py --model egnn --data oqmd --task sr --targets energy --gpus 1
 # python experiments/training_script.py --model egnn --data nomad --task sr --targets relative_energy --gpus 1

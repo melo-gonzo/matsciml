@@ -13,6 +13,8 @@ from matsciml.datasets.transforms import (
     MGLDataTransform,
     PeriodicPropertiesTransform,
     PointCloudToGraphTransform,
+    COMShift,
+    GraphToPointCloudTransform,
 )
 from matsciml.lightning.data_utils import (
     MatSciMLDataModule,
@@ -209,6 +211,9 @@ transforms = {
             node_keys=["pos", "atomic_numbers"],
         ),
         FrameAveraging(frame_averaging="3D", fa_method="stochastic"),
+    ],
+    "gala": [
+        COMShift(),
     ],
     "megnet": [
         PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
