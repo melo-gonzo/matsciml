@@ -62,7 +62,10 @@ def concatenate_keys(
         elif key not in ["target_types", "target_keys"]:
             if isinstance(value, dict):
                 # apply function recursively on dictionaries
-                result = concatenate_keys([s[key] for s in batch])
+                try:
+                    result = concatenate_keys([s[key] for s in batch])
+                except Exception:
+                    continue
             if isinstance(value, str):
                 result = value
             else:
@@ -119,7 +122,7 @@ def concatenate_keys(
                 batched_data[key] = result
             except Exception:
                 batched_data[key] = [s[key] for s in batch]
-                with open("batching_error.txt", "w") as f:
+                with open("batching_error.txt", "a+") as f:
                     print(key)
                     print(batch)
                     f.write(str(key))
