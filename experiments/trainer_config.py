@@ -134,8 +134,10 @@ def setup_task(args):
 def setup_trainer(args, callbacks, logger):
     trainer_args = deepcopy(trainer_config["generic"])
     trainer_args.update(trainer_config[args.run_type])
+    num_nodes = int(args.num_nodes)
     if args.run_type == "experiment":
         trainer_args.update({"devices": args.gpus})
+        trainer_args.update({"num_nodes": num_nodes})
 
     trainer = pl.Trainer(
         callbacks=callbacks, enable_checkpointing=False, logger=logger, **trainer_args

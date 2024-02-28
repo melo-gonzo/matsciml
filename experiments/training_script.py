@@ -84,6 +84,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--gpus", default=1, help="Number of gpu's to use")
+    parser.add_argument("--num_nodes", default=1, help="Number of nodes to use")
 
     args = parser.parse_args()
     if args.debug:
