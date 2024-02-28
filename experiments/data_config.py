@@ -56,8 +56,10 @@ available_data = {
             "val_split": "./matsciml/datasets/dev-is2re",
         },
         "experiment": {
-            "train_path": "/store/code/open-catalyst/data_lmdbs/is2re/all/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/is2re/all/val_id",
+            # "train_path": "/store/code/open-catalyst/data_lmdbs/is2re/all/train",
+            # "val_split": "/store/code/open-catalyst/data_lmdbs/is2re/all/val_id",
+            "train_path": "/datasets-alt/open-catalyst/carmelo_copy_is2re/is2re/all/train",
+            "val_split": "/datasets-alt/open-catalyst/carmelo_copy_is2re/is2re/all/val_id",
             "normalize_kwargs": norm_dict["is2re"],
         },
     },
