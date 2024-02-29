@@ -21,7 +21,7 @@ in combination with a PyG implementation of FAENet.
 task = ForceRegressionTask(
     encoder_class=FAENet,
     encoder_kwargs={
-        "average_frame_embeddings": False, #set to false for use with FA transform
+        "average_frame_embeddings": False,  # set to false for use with FA transform
         "pred_as_dict": False,
         "hidden_dim": 128,
         "out_dim": 64,

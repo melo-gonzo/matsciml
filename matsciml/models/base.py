@@ -1563,19 +1563,18 @@ class ForceRegressionTask(BaseTaskModule):
                 pos.requires_grad_(True)
             elif isinstance(pos, list):
                 [p.requires_grad_(True) for p in pos]
-            if isinstance(fa_pos, torch.Tensor):
-                fa_pos.requires_grad_(True)
-            elif isinstance(fa_pos, list):
-                [f_p.requires_grad_(True) for f_p in fa_pos]
             else:
                 raise ValueError(
                     f"'pos' data is required for force calculation, but isn't a tensor or a list of tensors: {type(pos)}.",
                 )
+            if isinstance(fa_pos, torch.Tensor):
+                fa_pos.requires_grad_(True)
+            elif isinstance(fa_pos, list):
+                [f_p.requires_grad_(True) for f_p in fa_pos]
             if "embeddings" in batch:
                 embeddings = batch.get("embeddings")
             else:
                 embeddings = self.encoder(batch)
-            import pdb; pdb.set_trace()
             outputs = self.process_embedding(
                 embeddings, pos, fa_rot, fa_pos, batch["natoms"]
             )
