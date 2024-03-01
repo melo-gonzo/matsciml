@@ -4,9 +4,7 @@ import pytorch_lightning as pl
 
 from matsciml.datasets.transforms import (
     FrameAveraging,
-    GraphToGraphTransform,
     PointCloudToGraphTransform,
-    UnitCellCalculator,
 )
 from matsciml.lightning.data_utils import MatSciMLDataModule
 from matsciml.models.base import ForceRegressionTask
@@ -41,7 +39,7 @@ dm = MatSciMLDataModule.from_devset(
                 cutoff_dist=20.0,
                 node_keys=["pos", "atomic_numbers"],
             ),
-            FrameAveraging(frame_averaging="3D", fa_method="stochastic"),
+            FrameAveraging(frame_averaging="3D", fa_method="all"),
         ],
     },
 )
