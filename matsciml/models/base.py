@@ -1543,12 +1543,13 @@ class ForceRegressionTask(BaseTaskModule):
                     pos: torch.Tensor = graph.ndata.get("pos")
                     # for frame averaging
                     fa_rot = graph.ndata.get("fa_rot", None)
-                    fa_pos = graph.get("fa_pos", None)
+                    fa_pos = graph.ndata.get("fa_pos", None)
                 else:
                     # otherwise assume it's PyG
                     pos: torch.Tensor = graph.pos
+                    # for frame averaging 
                     fa_rot = getattr(graph, "fa_rot", None)
-                    fa_pos = graph.get("fa_pos", None)
+                    fa_pos = getattr(graph, "fa_pos", None)
             else:
                 # assume point cloud otherwise
                 pos: torch.Tensor = batch.get("pos")
@@ -1575,8 +1576,9 @@ class ForceRegressionTask(BaseTaskModule):
                 embeddings = batch.get("embeddings")
             else:
                 embeddings = self.encoder(batch)
+            natoms = batch.get("natoms", None)
             outputs = self.process_embedding(
-                embeddings, pos, fa_rot, fa_pos, batch["natoms"]
+                embeddings, pos, fa_rot, fa_pos, natoms
             )
         return outputs
 
