@@ -39,7 +39,7 @@ dm = MatSciMLDataModule.from_devset(
                 cutoff_dist=20.0,
                 node_keys=["pos", "atomic_numbers"],
             ),
-            FrameAveraging(frame_averaging="3D", fa_method="all"),
+            FrameAveraging(frame_averaging="3D", fa_method="stochastic"),
         ],
     },
 )
