@@ -5,9 +5,7 @@ sys.path.append("/workspace/ai-mat-top/matsciml_top/forks/carmelo_matsciml/")
 
 from matsciml.datasets.transforms import (
     FrameAveraging,
-    GraphToGraphTransform,
     PointCloudToGraphTransform,
-    UnitCellCalculator,
 )
 from matsciml.lightning.data_utils import MatSciMLDataModule
 from matsciml.models.base import ScalarRegressionTask, ForceRegressionTask, GradFreeForceRegressionTask, MultiTaskLitModule
@@ -40,7 +38,7 @@ DATASET = "mp-traj"
 task_energy = ScalarRegressionTask(
     encoder_class=FAENet,
     encoder_kwargs={
-        "average_frame_embeddings": True,
+        "average_frame_embeddings": False,  # set to false for use with FA transform
         "pred_as_dict": False,
         "hidden_dim": 128,
         "out_dim": 64,

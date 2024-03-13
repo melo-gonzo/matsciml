@@ -2,6 +2,12 @@ from __future__ import annotations
 
 import os
 import sys
+from argparse import ArgumentParser
+
+from data_config import *
+from trainer_config import *
+from training_utils.utils import *
+
 
 cg_msl = "/store/code/open-catalyst/public-repo/matsciml"
 
@@ -13,11 +19,6 @@ sm_msl = "/workspace/ai-mat-top/matsciml_top/forks/carmelo_matsciml/"
 if os.path.exists(sm_msl):
     sys.path.append(sm_msl)
 
-from argparse import ArgumentParser
-
-from data_config import *
-from trainer_config import *
-from training_utils.utils import *
 
 do_ip_setup()
 
@@ -29,7 +30,7 @@ def main(args, log_path):
         opt_target = "val.total_loss"
     else:
         if args.targets[0] == "symmetry_group":
-            opt_target = f"val_spacegroup"
+            opt_target = "val_spacegroup"
         else:
             opt_target = f"val_{args.targets[0]}"
     os.makedirs(log_path, exist_ok=True)
@@ -110,8 +111,6 @@ if __name__ == "__main__":
 
 # python experiments/training_script.py --model gala --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
 
-
-
 # python experiments/training_script.py --model egnn --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
 # python experiments/training_script.py --model egnn --data oqmd --task sr --targets energy --gpus 1
 # python experiments/training_script.py --model egnn --data nomad --task sr --targets relative_energy --gpus 1
@@ -148,6 +147,8 @@ if __name__ == "__main__":
 # python experiments/training_script.py --model megnet --data materials-project --task sr csc --targets efermi symmetry_group --gpus 1
 # python experiments/training_script.py --model megnet --data materials-project --task bc csc --targets is_stable symmetry_group --gpus 1
 
+
+# python experiments/training_script.py --model faenet --data mp-traj --task sr gffr --targets corrected_total_energy force --gpus 1
 
 # Multi Data Multi Task
 

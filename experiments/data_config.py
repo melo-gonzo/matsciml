@@ -14,7 +14,6 @@ from matsciml.datasets.transforms import (
     PeriodicPropertiesTransform,
     PointCloudToGraphTransform,
     COMShift,
-    GraphToPointCloudTransform,
 )
 from matsciml.lightning.data_utils import (
     MatSciMLDataModule,
@@ -39,11 +38,13 @@ data_keys = [
 norm_files = os.listdir("./matsciml/datasets/norms")
 norm_dict = {}
 for data_name in data_keys:
+    norm_dict[data_name] = None
     for file in norm_files:
         if data_name in file:
             norm_dict[data_name] = json.load(
                 open(os.path.join("./matsciml/datasets/norms", file))
             )
+
 
 
 available_data = {
@@ -56,8 +57,6 @@ available_data = {
             "val_split": "./matsciml/datasets/dev-is2re",
         },
         "experiment": {
-            # "train_path": "/store/code/open-catalyst/data_lmdbs/is2re/all/train",
-            # "val_split": "/store/code/open-catalyst/data_lmdbs/is2re/all/val_id",
             "train_path": "/datasets-alt/open-catalyst/carmelo_copy_is2re/is2re/all/train",
             "val_split": "/datasets-alt/open-catalyst/carmelo_copy_is2re/is2re/all/val_id",
             "normalize_kwargs": norm_dict["is2re"],
@@ -166,13 +165,13 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/devset",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/devset",
+            "train_path": "/store/nosnap/chem-ai/mp-traj-full/devset",
+            "val_split": "/store/nosnap/chem-ai/mp-traj-full/devset",
         },
         "experiment": {
-            "train_path": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/val",
-            "test_split": "/store/code/open-catalyst/data_lmdbs/mp-traj-full/test",
+            "train_path": "/datasets-alt/molecular-data/mat_traj/mp-traj-full/train",
+            "val_split": "/datasets-alt/molecular-data/mat_traj/mp-traj-full/val",
+            "test_split": "/datasets-alt/molecular-data/mat_traj/mp-traj-full/test",
             "normalize_kwargs": norm_dict["mp-traj"],
             "batch_size": 4,
         },

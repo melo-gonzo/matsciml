@@ -98,7 +98,6 @@ class OQMDDataset(PointCloudDataset):
         lattice_features = {
             "lattice_params": lattice_params,
         }
-
         return_dict.update(**node_choices)
 
         # delta_e is formation energy
@@ -113,7 +112,6 @@ class OQMDDataset(PointCloudDataset):
         return_dict = {
             key: self._standardize_values(return_dict[key]) for key in return_dict
         }
-
         return_dict["lattice_features"] = lattice_features
         return_dict["targets"] = targets
         # only have spacegroup name
