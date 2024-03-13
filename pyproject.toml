@@ -16,7 +16,7 @@ dependencies = [
   "psutil",
   "pytorch_lightning==2.1.3",
   "dgllife==0.3.2",
-  "rdkit==2023.3.1",
+  "rdkit==2023.9.5",
   "numba>=0.55.0",
   "numpy>=1.21.0",
   "matplotlib",
@@ -54,8 +54,8 @@ dev = [
 ]
 pyg = [
   "torch_geometric==2.3.1",
-  "torch_scatter==2.1.1",
-  "torch_sparse==0.6.17",
+  "torch_scatter==2.1.2",
+  "torch_sparse==0.6.18",
   "pybind11"
 ]
 symmetry = [
@@ -69,3 +69,6 @@ where = ["."]
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"]}
 version = {attr = "matsciml.__version__"}
+
+[tool.ruff.lint]
+ignore = ["F403", "F405"]
