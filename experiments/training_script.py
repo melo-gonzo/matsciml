@@ -148,7 +148,7 @@ if __name__ == "__main__":
 # python experiments/training_script.py --model megnet --data materials-project --task bc csc --targets is_stable symmetry_group --gpus 1
 
 
-# python experiments/training_script.py --model faenet --data mp-traj --task sr gffr --targets energy force --gpus 1
+# python experiments/training_script.py --model faenet --data mp-traj --task sr gffr --targets corrected_total_energy force --gpus 1
 
 # Multi Data Multi Task
 
