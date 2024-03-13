@@ -4,12 +4,10 @@ import pytorch_lightning as pl
 
 from matsciml.datasets.transforms import (
     FrameAveraging,
-    GraphToGraphTransform,
     PointCloudToGraphTransform,
-    UnitCellCalculator,
 )
 from matsciml.lightning.data_utils import MatSciMLDataModule
-from matsciml.models.base import ScalarRegressionTask, GradFreeForceRegressionTask
+from matsciml.models.base import ForceRegressionTask
 from matsciml.models.pyg import FAENet
 
 """
@@ -18,16 +16,16 @@ in combination with a PyG implementation of FAENet.
 """
 
 # construct IS2RE relaxed energy regression with PyG implementation of FAENet
-task = GradFreeForceRegressionTask(
+task = ForceRegressionTask(
     encoder_class=FAENet,
     encoder_kwargs={
-        "average_frame_embeddings": True,
+        "average_frame_embeddings": False,  # set to false for use with FA transform
         "pred_as_dict": False,
         "hidden_dim": 128,
         "out_dim": 128,
         "tag_hidden_channels": 0,
     },
-    output_kwargs={"lazy": False, "input_dim": 128, "hidden_dim": 128},
+    output_kwargs={"lazy": False, "input_dim": 64, "hidden_dim": 64},
     task_keys=["force"],
 )
 
@@ -48,9 +46,5 @@ dm = MatSciMLDataModule.from_devset(
 
 
 # run a quick training loop
-trainer = pl.Trainer(fast_dev_run=10, devices=1)
+trainer = pl.Trainer(enable_checkpointing=False, logger=False, devices=1)
 trainer.fit(task, datamodule=dm)
-
-
-########################################################################################
-########################################################################################
