@@ -61,26 +61,27 @@ def setup_logger(log_path):
     csv_logger = CSVLogger(save_dir=log_path)
     log_path.replace("/", "-")
 
-    cg_wb_dir = "/store/nosnap/chem-ai/wb-logs/"
-    sm_wb_dir = "/workspace/nosnap/matsciml/dd_rebuttal/wb-logs"
+    # cg_wb_dir = "/store/nosnap/chem-ai/wb-logs/"
+    # sm_wb_dir = "/workspace/nosnap/matsciml/dd_rebuttal/wb-logs"
 
-    if os.path.exists(cg_wb_dir):
-        save_dir = cg_wb_dir
-    elif os.path.exists(sm_wb_dir):
-        save_dir = sm_wb_dir
-    else:
-        save_dir = "./experiments-2024-logs/wandb"
+    # if os.path.exists(cg_wb_dir):
+    #     save_dir = cg_wb_dir
+    # elif os.path.exists(sm_wb_dir):
+    #     save_dir = sm_wb_dir
+    # else:
+    #     save_dir = "./experiments-2024-logs/wandb"
 
-    name = log_path.replace("/", "-")[2:]
-    wb_logger = WandbLogger(
-        log_model="all",
-        name=name,
-        save_dir=save_dir,
-        entity='smiret',
-        project="dd-rebutal",
-        mode="online",
-    )
-    return [csv_logger, wb_logger]
+    # name = log_path.replace("/", "-")[2:]
+    # wb_logger = WandbLogger(
+    #     log_model="all",
+    #     name=name,
+    #     save_dir=save_dir,
+    #     entity='smiret',
+    #     project="dd-rebutal",
+    #     mode="online",
+    # )
+    # return [csv_logger, wb_logger]
+    return csv_logger
 
 
 def setup_task(args):
