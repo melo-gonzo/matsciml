@@ -33,6 +33,7 @@ class TensorNet(AbstractDGLModel, MGLTensorNet):
         **kwargs,
     ) -> Embeddings:
         outputs = self.tensornet_forward(graph, **kwargs)
+        import pdb; pdb.set_trace()
         return Embeddings(outputs[0], outputs[1])
 
     def tensornet_forward(
@@ -78,13 +79,14 @@ class TensorNet(AbstractDGLModel, MGLTensorNet):
         x = self.out_norm(x)
 
         g.ndata["node_feat"] = x
+        import pdb; pdb.set_trace()
         if self.is_intensive:
             node_vec = self.readout(g)
             vec = node_vec  # type: ignore
             output = self.final_layer(vec)
             if self.task_type == "classification":
                 output = self.sigmoid(output)
-            matsciml_output = (vec, node_vec)
+            matsciml_output = (g.ndata['node_feat'], node_vec)
             return matsciml_output
         g.ndata["atomic_properties"] = self.final_layer(g)
         output = dgl.readout_nodes(g, "atomic_properties", op="sum")
