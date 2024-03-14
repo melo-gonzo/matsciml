@@ -33,7 +33,6 @@ class TensorNet(AbstractDGLModel, MGLTensorNet):
         **kwargs,
     ) -> Embeddings:
         outputs = self.tensornet_forward(graph, **kwargs)
-        import pdb; pdb.set_trace()
         return Embeddings(outputs[0], outputs[1])
 
     def tensornet_forward(
@@ -79,7 +78,6 @@ class TensorNet(AbstractDGLModel, MGLTensorNet):
         x = self.out_norm(x)
 
         g.ndata["node_feat"] = x
-        import pdb; pdb.set_trace()
         if self.is_intensive:
             node_vec = self.readout(g)
             vec = node_vec  # type: ignore
