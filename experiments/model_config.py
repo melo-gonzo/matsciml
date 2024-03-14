@@ -86,6 +86,7 @@ available_models = {
         "encoder_class": M3GNet,
         "encoder_kwargs": {
             "element_types": element_types(),
+            "return_all_layer_output": True,
         },
         "output_kwargs": {"lazy": False, "input_dim": 64, "hidden_dim": 64},
     },
@@ -141,7 +142,7 @@ available_models = {
         # field: Literal["node_feat", "edge_feat"] = "node_feat",
         # is_intensive: bool = True,
         # ntargets: int = 1,
-        "output_kwargs": {"lazy": False, "input_dim": 64, "hidden_dim": 64},
+        "output_kwargs": {"lazy": False, "input_dim": 64*3, "hidden_dim": 64*3},
         "lr": 0.0001,
     },
     "generic": {
