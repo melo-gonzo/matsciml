@@ -2,12 +2,6 @@ from __future__ import annotations
 
 import os
 import sys
-from argparse import ArgumentParser
-
-from data_config import *
-from trainer_config import *
-from training_utils.utils import *
-
 
 cg_msl = "/store/code/open-catalyst/public-repo/matsciml"
 
@@ -19,13 +13,18 @@ sm_msl = "/workspace/ai-mat-top/matsciml_top/forks/carmelo_matsciml/"
 if os.path.exists(sm_msl):
     sys.path.append(sm_msl)
 
+from argparse import ArgumentParser
+
+from data_config import *
+from trainer_config import *
+from training_utils.utils import *
+
 
 do_ip_setup()
 
 
 def main(args, log_path):
     check_args(args, data_targets)
-    print("fix here main")
     if len(args.targets) > 1:
         opt_target = "val.total_loss"
     else:
