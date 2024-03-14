@@ -84,7 +84,7 @@ class TensorNet(AbstractDGLModel, MGLTensorNet):
             output = self.final_layer(vec)
             if self.task_type == "classification":
                 output = self.sigmoid(output)
-            matsciml_output = (g.ndata['node_feat'], node_vec)
+            matsciml_output = (vec, g.ndata['node_feat'])
             return matsciml_output
         g.ndata["atomic_properties"] = self.final_layer(g)
         output = dgl.readout_nodes(g, "atomic_properties", op="sum")
