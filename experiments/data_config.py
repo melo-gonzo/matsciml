@@ -5,6 +5,19 @@ import os
 import sys
 from copy import deepcopy
 
+
+cg_msl = "/store/code/open-catalyst/public-repo/matsciml"
+
+if os.path.exists(cg_msl):
+    sys.path.append(cg_msl)
+
+sm_msl = "/workspace/ai-mat-top/matsciml_top/forks/carmelo_matsciml/"
+
+if os.path.exists(sm_msl):
+    sys.path.append(sm_msl)
+
+
+
 from matsciml.datasets import *
 from matsciml.datasets.transforms import (
     DistancesTransform,

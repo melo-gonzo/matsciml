@@ -110,9 +110,12 @@ available_models = {
         "encoder_class": TensorNet,
         "encoder_kwargs": {
             "element_types": element_types(),
-            "num_rbf": 8,
-            "max_n": 2,
-            "max_l": 2,
+            "num_rbf": 32,
+            "max_n": 3,
+            "max_l": 3,
+            "units": 64,
+            "ntargets": 1
+            
         },
         # element_types: tuple[str, ...] = DEFAULT_ELEMENTS,
         # units: int = 64,
@@ -139,6 +142,7 @@ available_models = {
         # is_intensive: bool = True,
         # ntargets: int = 1,
         "output_kwargs": {"lazy": False, "input_dim": 64, "hidden_dim": 64},
+        "lr": 0.0001,
     },
     "generic": {
         "output_kwargs": {
