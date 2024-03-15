@@ -60,7 +60,6 @@ for data_name in data_keys:
             )
 
 
-
 available_data = {
     "is2re": {
         "dataset": "IS2REDataset",
@@ -191,7 +190,7 @@ available_data = {
         },
     },
     "gnome": {
-        "dataset": "MaterialsProjectDataset",
+        "dataset": "GnomeMaterialsProjectDataset",
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
