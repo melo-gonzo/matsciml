@@ -141,7 +141,7 @@ def setup_trainer(args, callbacks, logger):
         trainer_args.update({"num_nodes": num_nodes})
 
     trainer = pl.Trainer(
-        callbacks=callbacks, gradient_clip_val=0.5, enable_checkpointing=False, logger=logger, **trainer_args
+        callbacks=callbacks, enable_checkpointing=False, logger=logger, **trainer_args
     )
 
     return trainer
