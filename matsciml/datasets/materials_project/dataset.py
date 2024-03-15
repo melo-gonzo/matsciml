@@ -237,7 +237,7 @@ class MaterialsProjectDataset(PointCloudDataset):
         """
         data: dict[str, Any] = super().data_from_key(lmdb_index, subindex)
         try:
-            data['energy'] = data['corrected_total_energy']
+            data["energy"] = data["corrected_total_energy"]
         except Exception:
             pass
         return_dict = {}
@@ -346,6 +346,11 @@ class MaterialsProjectDataset(PointCloudDataset):
             pad_keys=["pc_features", "force", "stress"],
             unpacked_keys=["sizes", "src_nodes", "dst_nodes"],
         )
+
+
+@registry.register_dataset("GnomeMaterialsProjectDataset")
+class GnomeMaterialsProjectDataset(MaterialsProjectDataset):
+    pass
 
 
 if _has_pyg:
