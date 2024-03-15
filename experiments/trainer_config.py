@@ -80,7 +80,7 @@ def setup_logger(log_path):
             name=name,
             save_dir=save_dir,
             entity="smiret",
-            project="debug",
+            project="tensornet-debug",
             mode="online",
         )
     else:

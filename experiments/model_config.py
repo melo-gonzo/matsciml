@@ -142,6 +142,7 @@ available_models = {
         # is_intensive: bool = True,
         # ntargets: int = 1,
         "output_kwargs": {"lazy": False, "input_dim": 64, "hidden_dim": 64},
+         "lr": 0.00001,
     },
     "generic": {
         "output_kwargs": {

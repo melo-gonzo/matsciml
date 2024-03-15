@@ -64,6 +64,7 @@ if __name__ == "__main__":
             "nomad",
             "oqmd",
             "mp-traj",
+            "mp-gnome",
             "gnome",
         ],
     )

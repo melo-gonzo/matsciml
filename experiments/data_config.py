@@ -45,6 +45,7 @@ data_keys = [
     "symmetry",
     "mp-traj",
     "gnome",
+    "mp-gnome",
     "generic",
 ]
 
@@ -198,10 +199,26 @@ available_data = {
             "val_split": "/store/code/open-catalyst/data_lmdbs/gnome/devset",
         },
         "experiment": {
-            "train_path": "/store/code/open-catalyst/data_lmdbs/gnome/train",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/gnome/val",
-            "test_split": "/store/code/open-catalyst/data_lmdbs/gnome/test",
+            "train_path": "/datasets-alt/molecular-data/gnome/train",
+            "val_split": "/datasets-alt/molecular-data/gnome/val",
+            "test_split": "/datasets-alt/molecular-data/data_lmdbs/gnome/test",
             "normalize_kwargs": norm_dict["gnome"],
+        },
+    },
+    "mp-gnome": {
+        "dataset": "MaterialsProjectDataset",
+        "debug": {
+            "batch_size": 4,
+            "num_workers": 0,
+            "train_path": "/store/code/open-catalyst/data_lmdbs/gnome/devset",
+            "val_split": "/store/code/open-catalyst/data_lmdbs/gnome/devset",
+        },
+        "experiment": {
+            "train_path": "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/train",
+            "val_split": "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/val",
+            "test_split": "/datasets-alt/molecular-data/mat_traj/mp-traj-gnome-combo/test",
+            "normalize_kwargs": norm_dict["mp-traj"],
+            "batch_size": 4,
         },
     },
     "generic": {"experiment": {"batch_size": 4, "num_workers": 16}},
@@ -343,5 +360,6 @@ data_targets = {
         "magmom",
         "bandgap",
     ],
+    "mp-gnome": ["corrected_total_energy", "force"],
     "gnome": ["corrected_total_energy", "force"],
 }
