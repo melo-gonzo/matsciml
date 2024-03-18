@@ -1,16 +1,20 @@
 from __future__ import annotations
 
+from e3nn.o3 import Irreps
+from mace.modules.blocks import RealAgnosticInteractionBlock
+from torch import nn
 from torch.nn import LayerNorm, SiLU
 
 from matsciml.datasets.utils import element_types
 from matsciml.models import (
     FAENet,
+    GalaPotential,
     M3GNet,
     MEGNet,
     PLEGNNBackbone,
     TensorNet,
-    GalaPotential,
 )
+from matsciml.models.pyg.mace import MACEWrapper
 
 available_models = {
     "egnn": {
@@ -140,6 +144,25 @@ available_models = {
         # is_intensive: bool = True,
         # ntargets: int = 1,
         "output_kwargs": {"lazy": False, "input_dim": 64, "hidden_dim": 64},
+    },
+    "mace": {
+        "encoder_class": MACEWrapper,
+        "encoder_kwargs": {
+            "r_max": 6.0,
+            "num_bessel": 3,
+            "num_polynomial_cutoff": 3,
+            "max_ell": 2,
+            "interaction_cls": RealAgnosticInteractionBlock,
+            "interaction_cls_first": RealAgnosticInteractionBlock,
+            "num_interactions": 2,
+            "atom_embedding_dim": 64,
+            "MLP_irreps": Irreps("256x0e"),
+            "avg_num_neighbors": 10.0,
+            "correlation": 1,
+            "radial_type": "bessel",
+            "gate": nn.Identity(),
+        },
+        "output_kwargs": {"lazy": False, "input_dim": 128, "hidden_dim": 128},
     },
     "generic": {
         "output_kwargs": {

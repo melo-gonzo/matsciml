@@ -242,6 +242,14 @@ transforms = {
             node_keys=["pos", "atomic_numbers"],
         ),
     ],
+    "mace": [
+        PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
+        PointCloudToGraphTransform(
+            "pyg",
+            cutoff_dist=20.0,
+            node_keys=["pos", "atomic_numbers"],
+        ),
+    ],
 }
 
 
