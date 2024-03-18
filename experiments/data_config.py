@@ -52,8 +52,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/dev-is2re",
-            "val_split": "./matsciml/datasets/dev-is2re",
         },
         "experiment": {
             "train_path": "/datasets-alt/open-catalyst/carmelo_copy_is2re/is2re/all/train",
@@ -66,8 +64,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/dev-s2ef",
-            "val_split": "./matsciml/datasets/dev-s2ef",
         },
         "experiment": {
             "train_path": "/datasets-alt/open-catalyst/s2ef_train_200K/ref_energy_s2ef_train_200K_dgl_munch_edges/",
@@ -80,8 +76,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/lips/devset",
-            "val_split": "./matsciml/datasets/lips/devset",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/lips/train",
@@ -95,8 +89,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/carolina_db/devset/",
-            "val_split": "./matsciml/datasets/carolina_db/devset/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/carolina_matdb/train",
@@ -110,8 +102,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/materials_project/devset-full/",
-            "val_split": "./matsciml/datasets/materials_project/devset-full/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/materials_project/train",
@@ -125,8 +115,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/nomad/devset/",
-            "val_split": "./matsciml/datasets/nomad/devset/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/nomad/train",
@@ -140,8 +128,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/YEET/devset/",
-            "val_split": "./matsciml/datasets/YEET/devset/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/oqmd/train",
@@ -155,8 +141,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/symmetry/devset/",
-            "val_split": "./matsciml/datasets/symmetry/devset/",
         },
     },
     "mp-traj": {
@@ -164,8 +148,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "/store/nosnap/chem-ai/mp-traj-full/devset",
-            "val_split": "/store/nosnap/chem-ai/mp-traj-full/devset",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/mat_traj/mp-traj-full/train",
@@ -180,8 +162,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "/store/code/open-catalyst/data_lmdbs/gnome/devset",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/gnome/devset",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/gnome/train",
