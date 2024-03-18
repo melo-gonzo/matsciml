@@ -140,8 +140,8 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/oqmd/devset/",
-            "val_split": "./matsciml/datasets/oqmd/devset/",
+            "train_path": "./matsciml/datasets/YEET/devset/",
+            "val_split": "./matsciml/datasets/YEET/devset/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/oqmd/train",
@@ -260,11 +260,18 @@ def setup_datamodule(args):
         dm_kwargs = deepcopy(available_data["generic"]["experiment"])
         dset[args.run_type].pop("normalize_kwargs", None)
         dm_kwargs.update(dset[args.run_type])
-        dm = MatSciMLDataModule(
-            dataset=dset["dataset"],
-            dset_kwargs={"transforms": transforms[args.model]},
-            **dm_kwargs,
-        )
+        if args.run_type == "debug":
+            dm = MatSciMLDataModule.from_devset(
+                dataset=dset["dataset"],
+                dset_kwargs={"transforms": transforms[args.model]},
+                **dm_kwargs,
+            )
+        else:
+            dm = MatSciMLDataModule(
+                dataset=dset["dataset"],
+                dset_kwargs={"transforms": transforms[args.model]},
+                **dm_kwargs,
+            )
     else:
         train_dset_list = []
         val_dset_list = []
