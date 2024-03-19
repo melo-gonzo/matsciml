@@ -66,8 +66,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/dev-is2re",
-            "val_split": "./matsciml/datasets/dev-is2re",
         },
         "experiment": {
             "train_path": "/datasets-alt/open-catalyst/carmelo_copy_is2re/is2re/all/train",
@@ -80,8 +78,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/dev-s2ef",
-            "val_split": "./matsciml/datasets/dev-s2ef",
         },
         "experiment": {
             "train_path": "/datasets-alt/open-catalyst/s2ef_train_200K/ref_energy_s2ef_train_200K_dgl_munch_edges/",
@@ -94,8 +90,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/lips/devset",
-            "val_split": "./matsciml/datasets/lips/devset",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/lips/train",
@@ -109,8 +103,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/carolina_db/devset/",
-            "val_split": "./matsciml/datasets/carolina_db/devset/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/carolina_matdb/train",
@@ -124,8 +116,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/materials_project/devset-full/",
-            "val_split": "./matsciml/datasets/materials_project/devset-full/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/materials_project/train",
@@ -139,8 +129,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/nomad/devset/",
-            "val_split": "./matsciml/datasets/nomad/devset/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/nomad/train",
@@ -154,8 +142,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/oqmd/devset/",
-            "val_split": "./matsciml/datasets/oqmd/devset/",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/oqmd/train",
@@ -169,8 +155,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "./matsciml/datasets/symmetry/devset/",
-            "val_split": "./matsciml/datasets/symmetry/devset/",
         },
     },
     "mp-traj": {
@@ -178,8 +162,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "/store/nosnap/chem-ai/mp-traj-full/devset",
-            "val_split": "/store/nosnap/chem-ai/mp-traj-full/devset",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/mat_traj/mp-traj-full/train",
@@ -194,8 +176,6 @@ available_data = {
         "debug": {
             "batch_size": 4,
             "num_workers": 0,
-            "train_path": "/store/code/open-catalyst/data_lmdbs/gnome/devset",
-            "val_split": "/store/code/open-catalyst/data_lmdbs/gnome/devset",
         },
         "experiment": {
             "train_path": "/datasets-alt/molecular-data/gnome/train",
@@ -272,6 +252,14 @@ transforms = {
             node_keys=["pos", "atomic_numbers"],
         ),
     ],
+    "mace": [
+        PeriodicPropertiesTransform(cutoff_radius=6.5, adaptive_cutoff=True),
+        PointCloudToGraphTransform(
+            "pyg",
+            cutoff_dist=20.0,
+            node_keys=["pos", "atomic_numbers"],
+        ),
+    ],
 }
 
 
@@ -282,11 +270,18 @@ def setup_datamodule(args):
         dm_kwargs = deepcopy(available_data["generic"]["experiment"])
         dset[args.run_type].pop("normalize_kwargs", None)
         dm_kwargs.update(dset[args.run_type])
-        dm = MatSciMLDataModule(
-            dataset=dset["dataset"],
-            dset_kwargs={"transforms": transforms[args.model]},
-            **dm_kwargs,
-        )
+        if args.run_type == "debug":
+            dm = MatSciMLDataModule.from_devset(
+                dataset=dset["dataset"],
+                dset_kwargs={"transforms": transforms[args.model]},
+                **dm_kwargs,
+            )
+        else:
+            dm = MatSciMLDataModule(
+                dataset=dset["dataset"],
+                dset_kwargs={"transforms": transforms[args.model]},
+                **dm_kwargs,
+            )
     else:
         train_dset_list = []
         val_dset_list = []

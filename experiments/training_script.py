@@ -106,58 +106,13 @@ if __name__ == "__main__":
     except Exception as e:
         error_log(e, log_path)
 
+# Examples
 
 # Single Task Single Dataset
-
-# python experiments/training_script.py --model gala --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
-
-# python experiments/training_script.py --model egnn --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
-# python experiments/training_script.py --model egnn --data oqmd --task sr --targets energy --gpus 1
-# python experiments/training_script.py --model egnn --data nomad --task sr --targets relative_energy --gpus 1
-# python experiments/training_script.py --model egnn --data carolina --task sr --targets energy --gpus 1
-
-# python experiments/training_script.py --model megnet --data materials-project --task sr --targets formation_energy_per_atom --gpus 1
-# python experiments/training_script.py --model megnet --data oqmd --task sr --targets energy --gpus 1
-# python experiments/training_script.py --model megnet --data nomad --task sr --targets relative_energy --gpus 1
-# python experiments/training_script.py --model megnet --data carolina --task sr --targets energy --gpus 1
-
-# python experiments/training_script.py --model egnn --data materials-project --task sr --targets band_gap --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project --task sr --targets efermi --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project --task bc --targets is_stable --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project --task csc --targets symmetry_group --gpus 1
-
-# python experiments/training_script.py --model megnet --data materials-project --task sr --targets band_gap --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project --task sr --targets efermi --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project --task bc --targets is_stable --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project --task csc --targets symmetry_group --gpus 1
-
+# python experiments/training_script.py --model megnet --data materials-project --task sr --targets energy_per_atom --gpus 1
 
 # MultiTask Single Dataset
-# python experiments/training_script.py --model egnn --data materials-project --task sr sr --targets band_gap efermi --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project --task sr bc --targets band_gap is_stable --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project --task sr csc --targets band_gap symmetry_group --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project --task sr bc --targets efermi is_stable --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project --task sr csc --targets efermi symmetry_group --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project --task bc csc --targets is_stable symmetry_group --gpus 1
-
-# python experiments/training_script.py --model megnet --data materials-project --task sr sr --targets band_gap efermi --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project --task sr bc --targets band_gap is_stable --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project --task sr csc --targets band_gap symmetry_group --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project --task sr bc --targets efermi is_stable --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project --task sr csc --targets efermi symmetry_group --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project --task bc csc --targets is_stable symmetry_group --gpus 1
-
-
 # python experiments/training_script.py --model faenet --data mp-traj --task sr gffr --targets corrected_total_energy force --gpus 1
 
 # Multi Data Multi Task
-
-# python experiments/training_script.py --model egnn --data materials-project nomad --task sr sr --targets formation_energy_per_atom relative_energy --gpus 1
 # python experiments/training_script.py --model egnn --data materials-project s2ef --task sr sr --targets formation_energy_per_atom energy --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project is2re --task sr sr --targets formation_energy_per_atom energy_relaxed --gpus 1
-# python experiments/training_script.py --model egnn --data materials-project lips --task sr sr --targets formation_energy_per_atom energy --gpus 1
-
-# python experiments/training_script.py --model megnet --data materials-project nomad --task sr sr --targets formation_energy_per_atom relative_energy --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project s2ef --task sr sr --targets formation_energy_per_atom energy --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project is2re --task sr sr --targets formation_energy_per_atom energy_relaxed --gpus 1
-# python experiments/training_script.py --model megnet --data materials-project lips --task sr sr --targets formation_energy_per_atom energy --gpus 1
