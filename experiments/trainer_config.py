@@ -8,7 +8,7 @@ from data_config import available_data
 from model_config import available_models
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
 
-from matsciml.lightning.callbacks import Timer
+from matsciml.lightning import callbacks as cb
 
 from matsciml.models.base import (
     BinaryClassificationTask,
@@ -52,7 +52,9 @@ def setup_callbacks(opt_target, log_path):
         #     verbose=True,
         #     check_finite=False,
         # ),
-        Timer(),
+        
+        cb.Timer(),
+        cb.GradientCheckCallback()
     ]
     return callbacks
 
