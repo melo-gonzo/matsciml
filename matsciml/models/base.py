@@ -1093,7 +1093,7 @@ class BaseTaskModule(pl.LightningModule):
                 "Unable to parse batch size from data, defaulting to `None` for logging.",
             )
             batch_size = None
-        self.log_dict(metrics, batch_size=batch_size)
+        self.log_dict(metrics, batch_size=batch_size, sync_dist=True)
         return loss_dict
 
     def test_step(
@@ -1113,7 +1113,7 @@ class BaseTaskModule(pl.LightningModule):
                 "Unable to parse batch size from data, defaulting to `None` for logging.",
             )
             batch_size = None
-        self.log_dict(metrics, batch_size=batch_size)
+        self.log_dict(metrics, batch_size=batch_size, sync_dist=True)
         return loss_dict
 
     def _make_normalizers(self) -> dict[str, Normalizer]:
@@ -1472,7 +1472,7 @@ class MaceEnergyForceTask(BaseTaskModule):
                 "Unable to parse batch size from data, defaulting to `None` for logging."
             )
             batch_size = None
-        self.log_dict(metrics, batch_size=batch_size)
+        self.log_dict(metrics, batch_size=batch_size, sync_dist=True)
         return loss_dict
 
     def test_step(
@@ -1493,7 +1493,7 @@ class MaceEnergyForceTask(BaseTaskModule):
                 "Unable to parse batch size from data, defaulting to `None` for logging."
             )
             batch_size = None
-        self.log_dict(metrics, batch_size=batch_size)
+        self.log_dict(metrics, batch_size=batch_size, sync_dist=True)
         return loss_dict
 
     def on_train_batch_start(self, batch: Any, batch_idx: int) -> Optional[int]:
@@ -2773,10 +2773,12 @@ class MultiTaskLitModule(pl.LightningModule):
                     self.on_before_backward(subtask_loss["loss"])
                     # scale loss values in task
                     scaling = self.task_scaling[opt_index]
-                    self.manual_backward(
-                        subtask_loss["loss"] * scaling,
-                        retain_graph=not is_last_opt,
-                    )
+                    subtask_loss["loss"] = subtask_loss["loss"] * scaling
+                    subtask_loss["loss"].backward(retain_graph=not is_last_opt)
+                    # self.manual_backward(
+                    #     subtask_loss["loss"] * scaling,
+                    #     retain_graph=not is_last_opt,
+                    # )
                     self.on_after_backward()
                     prepend_affix(subtask_loss["log"], dataset_name)
                     loss_logging.update(subtask_loss["log"])
@@ -2868,12 +2870,14 @@ class MultiTaskLitModule(pl.LightningModule):
                     float(value),
                     on_epoch=True,
                     reduce_fx="min",
+                    sync_dist=True,
                 )
         self.log_dict(
             loss_logging,
             on_epoch=True,
             prog_bar=True,
             batch_size=batch_info["batch_size"],
+            sync_dist=True,
         )
         return losses
 

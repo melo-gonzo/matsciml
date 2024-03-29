@@ -7,6 +7,7 @@ import pytorch_lightning as pl
 from data_config import available_data
 from model_config import available_models
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 from matsciml.lightning import callbacks as cb
 
@@ -41,18 +42,7 @@ trainer_config = {
 
 def setup_callbacks(opt_target, log_path):
     callbacks = [
-        # ModelCheckpoint(monitor=opt_target, save_top_k=5),
-        # CodeCarbonCallback(
-        #     output_dir=log_path, country_iso_code="USA", measure_power_secs=1
-        # ),
-        # EarlyStopping(
-        #     patience=15,
-        #     monitor=opt_target,
-        #     mode="min",
-        #     verbose=True,
-        #     check_finite=False,
-        # ),
-        
+        ModelCheckpoint(monitor=opt_target, save_top_k=5),
         cb.Timer(),
         cb.GradientCheckCallback()
     ]
@@ -158,7 +148,7 @@ def setup_trainer(args, callbacks, logger):
         trainer_args.update({"num_nodes": num_nodes})
 
     trainer = pl.Trainer(
-        callbacks=callbacks, enable_checkpointing=False, logger=logger, **trainer_args
+        callbacks=callbacks, logger=logger, **trainer_args
     )
 
     return trainer
