@@ -42,6 +42,9 @@ def main(args, log_path):
     trainer = setup_trainer(args, callbacks, logger)
     trainer.fit(task, datamodule=dm)
 
+    trainer.model.to(device="cpu")
+    trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/mace_mat_traj_mar26_24.ckpt")
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()

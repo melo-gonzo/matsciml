@@ -168,7 +168,7 @@ available_data = {
             "val_split": "/datasets-alt/molecular-data/mat_traj/mp-traj-full/val",
             "test_split": "/datasets-alt/molecular-data/mat_traj/mp-traj-full/test",
             "normalize_kwargs": norm_dict["mp-traj"],
-            "batch_size": 4,
+            "batch_size": 16,
         },
     },
     "gnome": {

@@ -159,13 +159,14 @@ available_models = {
             "interaction_cls_first": RealAgnosticInteractionBlock,
             "num_interactions": 2,
             "atom_embedding_dim": 64,
-            "MLP_irreps": Irreps("256x0e"),
+            "MLP_irreps": Irreps("128x0e"),
             "avg_num_neighbors": 10.0,
             "correlation": 1,
             "radial_type": "bessel",
             "gate": nn.Identity(),
         },
         "output_kwargs": {"lazy": False, "input_dim": 128, "hidden_dim": 128},
+        "lr": 0.00005
     },
     "generic": {
         "output_kwargs": {
