@@ -43,7 +43,7 @@ def main(args, log_path):
     trainer.fit(task, datamodule=dm)
 
     trainer.model.to(device="cpu")
-    trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/mace_mat_traj_mar26_24.ckpt")
+    trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/egnn_mat_traj_apr1_24.ckpt")
 
 
 if __name__ == "__main__":
