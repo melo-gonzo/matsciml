@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from logging import DEBUG, getLogger
 from pathlib import Path
-from time import time
+from time import time, perf_counter
 from typing import Any, Callable, Dict, Iterator, Optional
 
 import numpy as np
