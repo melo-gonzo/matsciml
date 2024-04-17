@@ -110,9 +110,6 @@ dm = MultiDataModule(
     num_workers=dm_kwargs["num_workers"],
 )
 
-
-dm = MultiDataModule(train_dataset=train_dset, val_dataset=val_dset, batch_size=16)
-
 # Hard coded for two datasets.
 task = MultiTaskLitModule(
     (available_data[datasets[0]]['dataset'], energy_task),
@@ -120,12 +117,6 @@ task = MultiTaskLitModule(
     (available_data[datasets[1]]['dataset'], energy_task),
     (available_data[datasets[1]]['dataset'], gffr_task),
 )
-
-
-# # run 10 steps for funsies
-# trainer = pl.Trainer(fast_dev_run=10, enable_checkpointing=False, logger=False)
-# print(task)
-# trainer.fit(task, datamodule=dm)
 
 trainer_args = deepcopy(trainer_config["generic"])
 trainer_args.update(trainer_config[run_type])
@@ -135,3 +126,4 @@ if run_type == "experiment":
 trainer = pl.Trainer(
     callbacks=callbacks, logger=logger, **trainer_args
 )
+trainer.fit(task, datamodule=dm)

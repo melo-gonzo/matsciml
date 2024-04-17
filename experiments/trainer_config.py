@@ -45,7 +45,7 @@ def setup_callbacks(opt_target, log_path):
         ModelCheckpoint(monitor=opt_target, save_top_k=5),
         cb.Timer(),
         cb.GradientCheckCallback(),
-        cb.SAM(),
+        # cb.SAM(),
     ]
     return callbacks
 
