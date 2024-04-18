@@ -45,7 +45,7 @@ def setup_callbacks(opt_target, log_path):
         ModelCheckpoint(monitor=opt_target, save_top_k=5),
         cb.Timer(),
         cb.GradientCheckCallback(),
-        cb.SAM()
+        # cb.SAM(),
     ]
     return callbacks
 
@@ -148,8 +148,6 @@ def setup_trainer(args, callbacks, logger):
         trainer_args.update({"devices": args.gpus})
         trainer_args.update({"num_nodes": num_nodes})
 
-    trainer = pl.Trainer(
-        callbacks=callbacks, logger=logger, **trainer_args
-    )
+    trainer = pl.Trainer(callbacks=callbacks, logger=logger, **trainer_args)
 
     return trainer
