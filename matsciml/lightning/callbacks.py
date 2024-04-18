@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from logging import DEBUG, getLogger
 from pathlib import Path
+from copy import copy
 from time import time, perf_counter
 from typing import Any, Callable, Dict, Iterator, Optional
 
@@ -854,6 +855,21 @@ class SAM(Callback):
         self.batch = batch
         self.batch_idx = batch_idx
 
+    def extract_optimizer_specific_loss(self, trainer, optimizer, loss):
+        optimizer_names = copy(trainer.model.optimizer_names)
+        opt_idx = [opt == optimizer for opt in trainer.optimizers].index(True)
+        loss_keys = optimizer_names[opt_idx]
+        if loss_keys == ("Global", "Encoder"):
+            optimizer_names.pop(opt_idx)
+            global_loss = 0
+            for dataset, task in optimizer_names:
+                global_loss += loss[dataset][task]["loss"]
+            return {"loss": global_loss}
+        else:
+            for key in loss_keys:
+                loss = loss[key]
+        return loss
+
     def on_before_optimizer_step(
         self,
         trainer: Trainer,
@@ -864,6 +880,8 @@ class SAM(Callback):
             org_weights = self._first_step(optimizer)
         with torch.enable_grad():
             loss = task._compute_losses(self.batch)
+            if len(trainer.optimizers) > 1:
+                loss = self.extract_optimizer_specific_loss(trainer, optimizer, loss)
             loss = self._get_loss(loss)
             if torch.isfinite(loss):
                 trainer.strategy.backward(loss, optimizer=optimizer)
