@@ -43,7 +43,7 @@ def main(args, log_path):
     trainer.fit(task, datamodule=dm)
 
     trainer.model.to(device="cpu")
-    trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/egnn_mat_traj_apr1_24.ckpt")
+    trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/tensornet_sam_mat_traj_apr15_24.ckpt")
 
 
 if __name__ == "__main__":
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         args.run_type = "experiment"
 
     log_path = os.path.join(
-        "./experiments-2024-logs-full-runs/",
+        "/workspace/nosnap/matsciml/full-runs/",
         args.run_type,
         args.model,
         "-".join(args.data),

@@ -44,7 +44,8 @@ def setup_callbacks(opt_target, log_path):
     callbacks = [
         ModelCheckpoint(monitor=opt_target, save_top_k=5),
         cb.Timer(),
-        cb.GradientCheckCallback()
+        cb.GradientCheckCallback(),
+        cb.SAM()
     ]
     return callbacks
 
@@ -74,7 +75,7 @@ def setup_logger(log_path):
             name=name,
             save_dir=save_dir,
             entity="smiret",
-            project="faenet-mat-traj",
+            project="tensornet-sam-mat-traj",
             mode="online",
         )
     else:
