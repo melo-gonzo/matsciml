@@ -5,7 +5,7 @@ results
 logs
 *.traj
 experimental
-lightning_logs
+lightning_logsc
 debug_scripts
 experiments-2024-logs
 launch_scripts

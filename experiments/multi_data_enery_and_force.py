@@ -59,31 +59,25 @@ callbacks = setup_callbacks(opt_target, log_path)
 logger = setup_logger(log_path)
 
 model_kwargs = available_models[model]
-
-energy_task = ScalarRegressionTask(
+energy_task_1 = ScalarRegressionTask(
     **model_kwargs,
     task_keys=["energy"],
+    normalize_kwargs = available_data[datasets[0]][run_type]['normalize_kwargs'],
 )
-gffr_task = GradFreeForceRegressionTask(
+gffr_task_1 = GradFreeForceRegressionTask(
     **model_kwargs,
+    normalize_kwargs = available_data[datasets[0]][run_type]['normalize_kwargs'],
+)
+energy_task_2 = ScalarRegressionTask(
+    **model_kwargs,
+    task_keys=["energy"],
+    normalize_kwargs = available_data[datasets[1]][run_type]['normalize_kwargs'],
+)
+gffr_task_2 = GradFreeForceRegressionTask(
+    **model_kwargs,
+    normalize_kwargs = available_data[datasets[1]][run_type]['normalize_kwargs'],
 )
 
-
-# configure materials project from devset
-# dm = MatSciMLDataModule.from_devset(
-#     "NomadDataset",
-#     dset_kwargs={
-#         "transforms": [
-#             PeriodicPropertiesTransform(cutoff_radius=6.0, adaptive_cutoff=True),
-#             PointCloudToGraphTransform(
-#                 "dgl",
-#                 cutoff_dist=20.0,
-#                 node_keys=["pos", "atomic_numbers"],
-#             ),
-#         ],
-#     },
-#     num_workers=0,
-# )
 train_dset_list = []
 val_dset_list = []
 for data in datasets:
@@ -97,9 +91,8 @@ for data in datasets:
     train_dset_list.append(
         dataset(dm_kwargs["train_path"], transforms=model_transforms)
     )
-    val_dset_list.append(
-        dataset(dm_kwargs["val_split"], transforms=model_transforms)
-    )
+    val_dset_list.append(dataset(dm_kwargs["val_split"], transforms=model_transforms))
+
 
 train_dset = MultiDataset(train_dset_list)
 val_dset = MultiDataset(val_dset_list)
@@ -111,11 +104,12 @@ dm = MultiDataModule(
 )
 
 # Hard coded for two datasets.
+# Need to specify individual tasks for normalizations to be appropriate.
 task = MultiTaskLitModule(
-    (available_data[datasets[0]]['dataset'], energy_task),
-    (available_data[datasets[0]]['dataset'], gffr_task),
-    (available_data[datasets[1]]['dataset'], energy_task),
-    (available_data[datasets[1]]['dataset'], gffr_task),
+    (available_data[datasets[0]]["dataset"], energy_task_1),
+    (available_data[datasets[0]]["dataset"], gffr_task_1),
+    (available_data[datasets[1]]["dataset"], energy_task_2),
+    (available_data[datasets[1]]["dataset"], gffr_task_2),
 )
 
 trainer_args = deepcopy(trainer_config["generic"])
@@ -123,7 +117,5 @@ trainer_args.update(trainer_config[run_type])
 if run_type == "experiment":
     trainer_args.update({"devices": GPUS})
 
-trainer = pl.Trainer(
-    callbacks=callbacks, logger=logger, **trainer_args
-)
+trainer = pl.Trainer(callbacks=callbacks, logger=logger, **trainer_args)
 trainer.fit(task, datamodule=dm)
