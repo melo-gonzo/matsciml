@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from logging import DEBUG, getLogger
 from pathlib import Path
+from copy import copy
 from time import time, perf_counter
 from typing import Any, Callable, Dict, Iterator, Optional
 
@@ -854,21 +855,61 @@ class SAM(Callback):
         self.batch = batch
         self.batch_idx = batch_idx
 
+    def extract_optimizer_specific_loss(self, task, optimizer, loss):
+        optimizer_names = copy(task.optimizer_names)
+        opt_idx = [opt.optimizer == optimizer for opt in task.optimizers()].index(True)
+        loss_keys = optimizer_names[opt_idx]
+        if loss_keys == ("Global", "Encoder"):
+            optimizer_names.pop(opt_idx)
+            global_loss = 0
+            for dataset, task in optimizer_names:
+                if loss.get(dataset, None) is not None:
+                    global_loss += loss[dataset][task]["loss"]
+            return {"loss": global_loss}
+        # When some datasets have less samples than others, they wont have a loss value
+        if loss_keys[0] not in loss:
+            loss = {"loss": None}
+        else:
+            for key in loss_keys:
+                loss = loss[key]
+        return loss
+
+    def is_optimizer_used(self, task, optimizer):
+        # Check if only one optimizer is used (single task)
+        if isinstance(task.optimizers(), Optimizer):
+            return True
+        # Otherwise, see if the specific optimizer we are looking at is used in the current batch.
+        # If it is not present, this means there will be no loss value and all of the parameters
+        # gradients will be None.
+        optimizer_names = copy(task.optimizer_names)
+        opt_idx = [opt.optimizer == optimizer for opt in task.optimizers()].index(True)
+        used_optimizer_names = self.batch.keys()
+        if optimizer_names[opt_idx][0] in list(used_optimizer_names):
+            return True
+        else:
+            return False
+
     def on_before_optimizer_step(
         self,
         trainer: Trainer,
         task: BaseTaskModule,
         optimizer: Optimizer,
     ) -> None:
-        with torch.no_grad():
-            org_weights = self._first_step(optimizer)
-        with torch.enable_grad():
-            loss = task._compute_losses(self.batch)
-            loss = self._get_loss(loss)
-            if torch.isfinite(loss):
-                trainer.strategy.backward(loss, optimizer=optimizer)
-        with torch.no_grad():
-            self._second_step(optimizer, org_weights)
+        optimizer_is_used = self.is_optimizer_used(task, optimizer)
+        if optimizer_is_used:
+            with torch.no_grad():
+                org_weights = self._first_step(optimizer)
+            with torch.enable_grad():
+                loss = task._compute_losses(self.batch)
+                # this is for the multitask case where there is more than on optimizer
+                if not isinstance(task.optimizers(), Optimizer):
+                    loss = self.extract_optimizer_specific_loss(task, optimizer, loss)
+                loss = self._get_loss(loss)
+                if loss is not None:
+                    if torch.isfinite(loss):
+                        trainer.strategy.backward(loss, optimizer=optimizer)
+            with torch.no_grad():
+                self._second_step(optimizer, org_weights)
 
     def _norm_weights(self, p: torch.Tensor) -> torch.Tensor:
         return torch.abs(p) if self.adaptive else torch.ones_like(p)

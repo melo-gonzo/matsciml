@@ -36,7 +36,8 @@ dependencies = [
   "einops==0.7.0",
   "mendeleev==0.15.0",
   "e3nn",
-  "mace-torch==0.3.4"
+  "mace-torch==0.3.4",
+  "monty==2024.2.2"
 ]
 description = "PyTorch Lightning and Deep Graph Library enabled materials science deep learning pipeline"
 dynamic = ["version", "readme"]
@@ -50,7 +51,7 @@ all = [
   "matsciml[dev,symmetry,pyg]",
 ]
 dev = [
-  "ruff==0.3.6",
+  "ruff==0.4.0",
   "pre-commit",
   "pytest"
 ]
