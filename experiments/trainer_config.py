@@ -75,7 +75,7 @@ def setup_logger(log_path):
             name=name,
             save_dir=save_dir,
             entity="smiret",
-            project="tensornet-sam-mat-traj",
+            project="mace-combo-multi",
             mode="online",
         )
     else:

@@ -47,13 +47,18 @@ run_type = "experiment"
 #     "-".join(targets),
 # )
 
-GPUS = 1
+GPUS = 8
 opt_target = "val.total_loss"
 
 datasets = ["mp-traj", "gnome"]
-model = "faenet"
+model = "mace"
 
-
+log_path = os.path.join(
+        "/workspace/nosnap/matsciml/full-runs/",
+        run_type,
+        model,
+        "-".join(datasets),
+    )
 
 callbacks = setup_callbacks(opt_target, log_path)
 logger = setup_logger(log_path)
@@ -129,4 +134,4 @@ trainer = pl.Trainer(
 trainer.fit(task, datamodule=dm)
 
 trainer.model.to(device="cpu")
-trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/faebet_combo_full_multi_apr17_24.ckpt")
+trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/mace_combo_full_multi_apr17_24.ckpt")
