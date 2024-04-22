@@ -75,7 +75,7 @@ def setup_logger(log_path):
             name=name,
             save_dir=save_dir,
             entity="smiret",
-            project="mace-combo-multi",
+            project="faenet-mattraj-multi-sam",
             mode="online",
         )
     else:

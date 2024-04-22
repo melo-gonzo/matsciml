@@ -51,7 +51,7 @@ GPUS = 8
 opt_target = "val.total_loss"
 
 datasets = ["mp-traj", "gnome"]
-model = "mace"
+model = "faenet"
 
 log_path = os.path.join(
         "/workspace/nosnap/matsciml/full-runs/",
@@ -104,7 +104,7 @@ val_dset = MultiDataset(val_dset_list)
 dm = MultiDataModule(
     train_dataset=train_dset,
     val_dataset=val_dset,
-    batch_size=dm_kwargs["batch_size"],
+    batch_size= 16, #dm_kwargs["batch_size"],
     num_workers=dm_kwargs["num_workers"],
 )
 
@@ -128,4 +128,4 @@ trainer = pl.Trainer(
 trainer.fit(task, datamodule=dm)
 
 trainer.model.to(device="cpu")
-trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/mace_sam_combo_full_multi_apr19_24.ckpt")
+trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/faenet_sam_combo_full_multi_apr19_24.ckpt")

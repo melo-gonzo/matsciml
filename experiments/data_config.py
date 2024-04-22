@@ -160,7 +160,7 @@ available_data = {
     "mp-traj": {
         "dataset": "MaterialsProjectDataset",
         "debug": {
-            "batch_size": 4,
+            "batch_size": 16,
             "num_workers": 0,
         },
         "experiment": {
@@ -174,7 +174,7 @@ available_data = {
     "gnome": {
         "dataset": "GnomeMaterialsProjectDataset",
         "debug": {
-            "batch_size": 4,
+            "batch_size": 16,
             "num_workers": 0,
         },
         "experiment": {
