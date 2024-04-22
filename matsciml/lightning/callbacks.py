@@ -907,7 +907,8 @@ class SAM(Callback):
                 loss = self._get_loss(loss)
                 if loss is not None:
                     if torch.isfinite(loss):
-                        trainer.strategy.backward(loss, optimizer=optimizer)
+                        loss.backward()
+                        # trainer.strategy.backward(loss, optimizer=optimizer)
             with torch.no_grad():
                 self._second_step(optimizer, org_weights)
 
