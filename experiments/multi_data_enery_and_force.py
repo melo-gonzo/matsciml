@@ -63,10 +63,12 @@ energy_task_1 = ScalarRegressionTask(
     **model_kwargs,
     task_keys=["energy"],
     normalize_kwargs = available_data[datasets[0]][run_type]['normalize_kwargs'],
+    task_loss_scaling = {"energy": 1}
 )
 gffr_task_1 = GradFreeForceRegressionTask(
     **model_kwargs,
     normalize_kwargs = available_data[datasets[0]][run_type]['normalize_kwargs'],
+    task_loss_scaling = {"force": 10000}
 )
 energy_task_2 = ScalarRegressionTask(
     **model_kwargs,
