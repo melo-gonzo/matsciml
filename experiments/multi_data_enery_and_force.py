@@ -51,7 +51,7 @@ GPUS = 8
 opt_target = "val.total_loss"
 
 datasets = ["mp-traj", "gnome"]
-model = "faenet"
+model = "m3gnet"
 
 log_path = os.path.join(
         "/workspace/nosnap/matsciml/full-runs/",
@@ -128,4 +128,4 @@ trainer = pl.Trainer(
 trainer.fit(task, datamodule=dm)
 
 trainer.model.to(device="cpu")
-trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/faenet_sam_combo_full_multi_apr19_24.ckpt")
+trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/m3gnet_sam_combo_full_multi_apr22_24.ckpt")
