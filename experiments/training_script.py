@@ -43,7 +43,7 @@ def main(args, log_path):
     trainer.fit(task, datamodule=dm)
 
     trainer.model.to(device="cpu")
-    trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/tensornet_sam_mat_traj_apr15_24.ckpt")
+    trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/mace_sam_test_10k_may1_24.ckpt")
 
 
 if __name__ == "__main__":
@@ -69,6 +69,13 @@ if __name__ == "__main__":
             "mp-traj",
             "mp-gnome",
             "gnome",
+            "iit-10k",
+            "iit-25k",
+            "iit-50k",
+            "iit-100k",
+            "iit-250k",
+            "iit-500k",
+            "iit-1M",
         ],
     )
 

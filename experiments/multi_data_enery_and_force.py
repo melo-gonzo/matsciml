@@ -50,11 +50,12 @@ run_type = "experiment"
 GPUS = 8
 opt_target = "val.total_loss"
 
-datasets = ["mp-traj", "gnome"]
-model = "m3gnet"
+# datasets = ["mp-traj", "gnome"]
+datasets = ["iit-10k"]
+model = "mace"
 
 log_path = os.path.join(
-        "/workspace/nosnap/matsciml/full-runs/",
+        "/workspace/nosnap/matsciml/full-runs-may-2024/",
         run_type,
         model,
         "-".join(datasets),
@@ -64,6 +65,9 @@ callbacks = setup_callbacks(opt_target, log_path)
 logger = setup_logger(log_path)
 
 model_kwargs = available_models[model]
+
+
+
 energy_task_1 = ScalarRegressionTask(
     **model_kwargs,
     task_keys=["energy"],
@@ -73,16 +77,19 @@ energy_task_1 = ScalarRegressionTask(
 gffr_task_1 = GradFreeForceRegressionTask(
     **model_kwargs,
     normalize_kwargs = available_data[datasets[0]][run_type]['normalize_kwargs'],
-    task_loss_scaling = {"force": 10000}
+    task_loss_scaling = {"force": 10}
 )
+
 energy_task_2 = ScalarRegressionTask(
     **model_kwargs,
     task_keys=["energy"],
     normalize_kwargs = available_data[datasets[1]][run_type]['normalize_kwargs'],
+    task_loss_scaling = {"energy": 1}
 )
 gffr_task_2 = GradFreeForceRegressionTask(
     **model_kwargs,
     normalize_kwargs = available_data[datasets[1]][run_type]['normalize_kwargs'],
+    task_loss_scaling = {"force": 10}
 )
 
 train_dset_list = []
@@ -130,4 +137,4 @@ trainer = pl.Trainer(
 trainer.fit(task, datamodule=dm)
 
 trainer.model.to(device="cpu")
-trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/m3gnet_sam_combo_full_multi_apr22_24.ckpt")
+trainer.save_checkpoint("/workspace/nosnap/matsciml/checkpoints/mace_sam_10k_test_may1_24.ckpt")

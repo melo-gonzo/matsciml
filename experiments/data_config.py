@@ -200,6 +200,121 @@ available_data = {
             "batch_size": 4,
         },
     },
+    "iit-10k": {
+        "dataset": "MaterialsProjectDataset",
+        "debug": {
+            "batch_size": 16,
+            "num_workers": 0,
+        },
+        "experiment": {
+            "train_path": "/datasets-alt/molecular-data/iit_potentials/10k",
+            "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "normalize_kwargs": norm_dict["mp-traj"],
+            "batch_size": 16,
+        },
+
+    },
+
+    "iit-25k": {
+        "dataset": "MaterialsProjectDataset",
+        "debug": {
+            "batch_size": 16,
+            "num_workers": 0,
+        },
+        "experiment": {
+            "train_path": "/datasets-alt/molecular-data/iit_potentials/25k",
+            "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "normalize_kwargs": norm_dict["mp-traj"],
+            "batch_size": 16,
+        },
+
+    },
+
+    "iit-50k": {
+        "dataset": "MaterialsProjectDataset",
+        "debug": {
+            "batch_size": 16,
+            "num_workers": 0,
+        },
+        "experiment": {
+            "train_path": "/datasets-alt/molecular-data/iit_potentials/50k",
+            "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "normalize_kwargs": norm_dict["mp-traj"],
+            "batch_size": 16,
+        },
+
+    },
+
+    "iit-100k": {
+        "dataset": "MaterialsProjectDataset",
+        "debug": {
+            "batch_size": 16,
+            "num_workers": 0,
+        },
+        "experiment": {
+            "train_path": "/datasets-alt/molecular-data/iit_potentials/100k",
+            "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "normalize_kwargs": norm_dict["mp-traj"],
+            "batch_size": 16,
+        },
+
+    },
+
+
+    "iit-250k": {
+        "dataset": "MaterialsProjectDataset",
+        "debug": {
+            "batch_size": 16,
+            "num_workers": 0,
+        },
+        "experiment": {
+            "train_path": "/datasets-alt/molecular-data/iit_potentials/250k",
+            "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "normalize_kwargs": norm_dict["mp-traj"],
+            "batch_size": 16,
+        },
+
+    },
+
+    "iit-500k": {
+        "dataset": "MaterialsProjectDataset",
+        "debug": {
+            "batch_size": 16,
+            "num_workers": 0,
+        },
+        "experiment": {
+            "train_path": "/datasets-alt/molecular-data/iit_potentials/250k",
+            "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "normalize_kwargs": norm_dict["mp-traj"],
+            "batch_size": 16,
+        },
+
+    },
+
+
+    "iit-1M": {
+        "dataset": "MaterialsProjectDataset",
+        "debug": {
+            "batch_size": 16,
+            "num_workers": 0,
+        },
+        "experiment": {
+            "train_path": "/datasets-alt/molecular-data/iit_potentials/1M",
+            "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
+            "normalize_kwargs": norm_dict["mp-traj"],
+            "batch_size": 16,
+        },
+
+    },
+
+
     "generic": {"experiment": {"batch_size": 4, "num_workers": 16}},
 }
 
@@ -356,4 +471,11 @@ data_targets = {
     ],
     "mp-gnome": ["corrected_total_energy", "force"],
     "gnome": ["corrected_total_energy", "force"],
+    "iit-10k": ["corrected_total_energy", "force"],
+    "iit-25k": ["corrected_total_energy", "force"],
+    "iit-50k": ["corrected_total_energy", "force"],
+    "iit-100k": ["corrected_total_energy", "force"],
+    "iit-250k": ["corrected_total_energy", "force"],
+    "iit-500k": ["corrected_total_energy", "force"],
+    "iit-1M": ["corrected_total_energy", "force"],
 }
