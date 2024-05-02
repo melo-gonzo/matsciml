@@ -58,25 +58,7 @@ if __name__ == "__main__":
         "--data",
         nargs="+",
         required=True,
-        choices=[
-            "is2re",
-            "s2ef",
-            "carolina",
-            "materials-project",
-            "lips",
-            "nomad",
-            "oqmd",
-            "mp-traj",
-            "mp-gnome",
-            "gnome",
-            "iit-10k",
-            "iit-25k",
-            "iit-50k",
-            "iit-100k",
-            "iit-250k",
-            "iit-500k",
-            "iit-1M",
-        ],
+        choices=data_keys
     )
 
     parser.add_argument(

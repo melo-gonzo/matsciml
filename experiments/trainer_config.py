@@ -121,10 +121,13 @@ def setup_task(args):
         else:
             dset = deepcopy(available_data[args.data[0]])
         normalize_kwargs = dset[args.run_type].pop("normalize_kwargs", None)
+        task_loss_scaling = dset[args.run_type].pop("task_loss_scaling", None)
         task_args.update(available_models[args.model])
         if args.tasks[idx] != "csc":
             task_args.update({"task_keys": [args.targets[idx]]})
         task_args.update({"normalize_kwargs": normalize_kwargs})
+        if task_loss_scaling is not None:
+            task_args.update({"task_loss_scaling": task_loss_scaling})
         task = task(**task_args)
         tasks.append(task)
     if len(tasks) > 1:

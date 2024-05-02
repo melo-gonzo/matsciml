@@ -47,6 +47,13 @@ data_keys = [
     "gnome",
     "mp-gnome",
     "generic",
+    "iit-10k",
+    "iit-25k",
+    "iit-50k",
+    "iit-100k",
+    "iit-250k",
+    "iit-500k",
+    "iit-1M",
 ]
 
 norm_files = os.listdir("./matsciml/datasets/norms")
@@ -210,7 +217,8 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/iit_potentials/10k",
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
-            "normalize_kwargs": norm_dict["mp-traj"],
+            "normalize_kwargs": norm_dict["iit-10k"],
+            "task_loss_scaling": {"energy": 1, "force": 10000},
             "batch_size": 16,
         },
 
@@ -226,7 +234,8 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/iit_potentials/25k",
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
-            "normalize_kwargs": norm_dict["mp-traj"],
+            "normalize_kwargs": norm_dict["iit-25k"],
+            "task_loss_scaling": {"energy": 1, "force": 10000},
             "batch_size": 16,
         },
 
@@ -242,7 +251,8 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/iit_potentials/50k",
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
-            "normalize_kwargs": norm_dict["mp-traj"],
+            "normalize_kwargs": norm_dict["iit-50k"],
+            "task_loss_scaling": {"energy": 1, "force": 10000},
             "batch_size": 16,
         },
 
@@ -258,7 +268,8 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/iit_potentials/100k",
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
-            "normalize_kwargs": norm_dict["mp-traj"],
+            "normalize_kwargs": norm_dict["iit-100k"],
+            "task_loss_scaling": {"energy": 1, "force": 10000},
             "batch_size": 16,
         },
 
@@ -275,7 +286,8 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/iit_potentials/250k",
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
-            "normalize_kwargs": norm_dict["mp-traj"],
+            "normalize_kwargs": norm_dict["iit-250k"],
+            "task_loss_scaling": {"energy": 1, "force": 10000},
             "batch_size": 16,
         },
 
@@ -291,7 +303,8 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/iit_potentials/250k",
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
-            "normalize_kwargs": norm_dict["mp-traj"],
+            "normalize_kwargs": norm_dict["iit-500k"],
+            "task_loss_scaling": {"energy": 1, "force": 10000},
             "batch_size": 16,
         },
 
@@ -308,13 +321,12 @@ available_data = {
             "train_path": "/datasets-alt/molecular-data/iit_potentials/1M",
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
-            "normalize_kwargs": norm_dict["mp-traj"],
+            "normalize_kwargs": norm_dict["iit-1M"],
+            "task_loss_scaling": {"energy": 1, "force": 10000},
             "batch_size": 16,
         },
 
     },
-
-
     "generic": {"experiment": {"batch_size": 4, "num_workers": 16}},
 }
 
@@ -384,6 +396,7 @@ def setup_datamodule(args):
         dset = deepcopy(available_data[data])
         dm_kwargs = deepcopy(available_data["generic"]["experiment"])
         dset[args.run_type].pop("normalize_kwargs", None)
+        dset[args.run_type].pop("task_loss_scaling", None)
         dm_kwargs.update(dset[args.run_type])
         if args.run_type == "debug":
             dm = MatSciMLDataModule.from_devset(
