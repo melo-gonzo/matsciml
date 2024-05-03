@@ -125,6 +125,8 @@ def setup_task(args):
         task_args.update(available_models[args.model])
         if args.tasks[idx] != "csc" and args.tasks[idx] != "fr":
             task_args.update({"task_keys": [args.targets[idx]]})
+        elif args.tasks[idx] == "fr":
+            task_args.update({"task_keys": [args.targets[idx]]})
         task_args.update({"normalize_kwargs": normalize_kwargs})
         if task_loss_scaling is not None:
             task_args.update({"task_loss_scaling": task_loss_scaling})

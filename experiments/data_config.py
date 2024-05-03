@@ -218,7 +218,7 @@ available_data = {
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "normalize_kwargs": norm_dict["iit-10k"],
-            "task_loss_scaling": {"energy": 1, "force": 10000},
+            "task_loss_scaling": {"corrected_total_energy": 1, "force": 10},
             "batch_size": 16,
         },
 
@@ -235,7 +235,7 @@ available_data = {
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "normalize_kwargs": norm_dict["iit-25k"],
-            "task_loss_scaling": {"energy": 1, "force": 10000},
+            "task_loss_scaling": {"corrected_total_energy": 1, "force": 10},
             "batch_size": 16,
         },
 
@@ -252,7 +252,7 @@ available_data = {
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "normalize_kwargs": norm_dict["iit-50k"],
-            "task_loss_scaling": {"energy": 1, "force": 10000},
+            "task_loss_scaling": {"corrected_total_energy": 1, "force": 10},
             "batch_size": 16,
         },
 
@@ -269,7 +269,7 @@ available_data = {
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "normalize_kwargs": norm_dict["iit-100k"],
-            "task_loss_scaling": {"energy": 1, "force": 10000},
+            "task_loss_scaling": {"corrected_total_energy": 1, "force": 10},
             "batch_size": 16,
         },
 
@@ -287,7 +287,7 @@ available_data = {
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "normalize_kwargs": norm_dict["iit-250k"],
-            "task_loss_scaling": {"energy": 1, "force": 10000},
+            "task_loss_scaling": {"corrected_total_energy": 1, "force": 10},
             "batch_size": 16,
         },
 
@@ -304,12 +304,11 @@ available_data = {
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "normalize_kwargs": norm_dict["iit-500k"],
-            "task_loss_scaling": {"energy": 1, "force": 10000},
+            "task_loss_scaling": {"corrected_total_energy": 1, "force": 10},
             "batch_size": 16,
         },
 
     },
-
 
     "iit-1M": {
         "dataset": "MaterialsProjectDataset",
@@ -322,7 +321,7 @@ available_data = {
             "val_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "test_split": "/datasets-alt/molecular-data/iit_potentials/test",
             "normalize_kwargs": norm_dict["iit-1M"],
-            "task_loss_scaling": {"energy": 1, "force": 10000},
+            "task_loss_scaling": {"corrected_total_energy": 1, "force": 10},
             "batch_size": 16,
         },
 

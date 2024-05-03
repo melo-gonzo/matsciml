@@ -154,21 +154,23 @@ available_models = {
         "encoder_class": MACEWrapper,
         "encoder_kwargs": {
             "r_max": 6.0,
-            "num_bessel": 3,
-            "num_polynomial_cutoff": 3,
-            "max_ell": 2,
+            "num_bessel": 10,
+            "num_polynomial_cutoff": 6,
+            "max_ell": 3,
             "interaction_cls": RealAgnosticInteractionBlock,
             "interaction_cls_first": RealAgnosticInteractionBlock,
             "num_interactions": 2,
-            "atom_embedding_dim": 64,
-            "MLP_irreps": Irreps("128x0e"),
+            # "atom_embedding_dim": 64,
+            # "MLP_irreps": Irreps("128x0e"),
+            "atom_embedding_dim": 256,
+            "MLP_irreps": Irreps("16x0e"),
             "avg_num_neighbors": 10.0,
-            "correlation": 1,
+            "correlation": 3,
             "radial_type": "bessel",
             "gate": nn.Identity(),
         },
-        "output_kwargs": {"lazy": False, "input_dim": 128, "hidden_dim": 128},
-        "lr": 0.00005
+        "output_kwargs": {"lazy": False, "input_dim": 512, "hidden_dim": 512},
+        "lr": 0.005
     },
     "generic": {
         "output_kwargs": {
