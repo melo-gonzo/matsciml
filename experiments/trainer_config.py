@@ -129,7 +129,14 @@ def setup_task(args):
             task_args.update({"task_keys": [args.targets[idx], "energy"]})
         task_args.update({"normalize_kwargs": normalize_kwargs})
         if task_loss_scaling is not None:
-            task_args.update({"task_loss_scaling": task_loss_scaling})
+            loss_scaling = {}
+            for k in task_args['task_keys']:
+                if k not in task_loss_scaling:
+                    print(f"\nTask key {k} does not have a loss scaling factor. Defaulting to 1.\n")
+                    loss_scaling[k] = 1
+                else:
+                    loss_scaling[k] =  task_loss_scaling[k]
+            task_args.update({"task_loss_scaling": loss_scaling})
         task = task(**task_args)
         tasks.append(task)
     if len(tasks) > 1:
