@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from contextlib import ExitStack, nullcontext
 from pathlib import Path
-from typing import Any, ContextManager, Dict, List, Optional, Type, Union
+from typing import Any, Callable, ContextManager, Dict, List, Optional, Type, Union
 from warnings import warn
 
 import pytorch_lightning as pl
@@ -247,8 +247,7 @@ class AbstractTask(ABC, pl.LightningModule):
         ...
 
     @abstractmethod
-    def read_batch_size(self, batch: BatchDict) -> int | None:
-        ...
+    def read_batch_size(self, batch: BatchDict) -> int | None: ...
 
     @abstractmethod
     def _forward(self, *args, **kwargs) -> Embeddings:
@@ -622,7 +621,6 @@ if package_registry["pyg"]:
 
 
 class AbstractEnergyModel(pl.LightningModule):
-
     """
     At a minimum, the point of this is to help register associated models
     with PyTorch Lightning ModelRegistry; the expectation is that you get
@@ -684,7 +682,7 @@ class BaseTaskModule(pl.LightningModule):
         if encoder_class is not None and encoder_kwargs:
             try:
                 encoder = encoder_class(**encoder_kwargs)
-            except:
+            except:  # noqa: E722
                 raise ValueError(
                     f"Unable to instantiate encoder {encoder_class} with kwargs: {encoder_kwargs}.",
                 )
@@ -701,10 +699,10 @@ class BaseTaskModule(pl.LightningModule):
         self.normalize_kwargs = normalize_kwargs
         self.task_keys = task_keys
         if "task_loss_scaling" in kwargs:
-            if kwargs['task_loss_scaling'] is not None:
-                self.task_loss_scaling = kwargs['task_loss_scaling']
+            if kwargs["task_loss_scaling"] is not None:
+                self.task_loss_scaling = kwargs["task_loss_scaling"]
         else:
-            self.task_loss_scaling = dict(zip(task_keys, [1]*len(task_keys)))
+            self.task_loss_scaling = dict(zip(task_keys, [1] * len(task_keys)))
         self.embedding_reduction_type = embedding_reduction_type
         self.save_hyperparameters(ignore=["encoder", "loss_func"])
         accuracy_func = kwargs.get("accuracy_func", None)
@@ -813,8 +811,7 @@ class BaseTaskModule(pl.LightningModule):
         return True
 
     @abstractmethod
-    def _make_output_heads(self) -> nn.ModuleDict:
-        ...
+    def _make_output_heads(self) -> nn.ModuleDict: ...
 
     @property
     def output_heads(self) -> nn.ModuleDict:
@@ -1017,7 +1014,6 @@ class BaseTaskModule(pl.LightningModule):
             loss = loss * self.task_loss_scaling[key]
             losses[key] = loss
 
-
         total_loss: torch.Tensor = sum(losses.values())
         total_accuracy: torch.Tensor = sum(accuracies.values())
 
@@ -1076,7 +1072,7 @@ class BaseTaskModule(pl.LightningModule):
             metrics[f"train_{key}"] = value
         try:
             batch_size = self.encoder.read_batch_size(batch)
-        except:
+        except:  # noqa: E722
             warn(
                 "Unable to parse batch size from data, defaulting to `None` for logging.",
             )
@@ -1096,7 +1092,7 @@ class BaseTaskModule(pl.LightningModule):
             metrics[f"val_{key}"] = value
         try:
             batch_size = self.encoder.read_batch_size(batch)
-        except:
+        except:  # noqa: E722
             warn(
                 "Unable to parse batch size from data, defaulting to `None` for logging.",
             )
@@ -1116,7 +1112,7 @@ class BaseTaskModule(pl.LightningModule):
             metrics[f"test_{key}"] = value
         try:
             batch_size = self.encoder.read_batch_size(batch)
-        except:
+        except:  # noqa: E722
             warn(
                 "Unable to parse batch size from data, defaulting to `None` for logging.",
             )
@@ -1407,7 +1403,7 @@ class MaceEnergyForceTask(BaseTaskModule):
             target_val = targets[key]
             if self.uses_normalizers:
                 target_val = self.normalizers[key].norm(target_val)
-            if self.loss_coeff == None:
+            if self.loss_coeff is None:
                 coefficient = 1.0
             else:
                 coefficient = self.loss_coeff[key]
@@ -1415,7 +1411,6 @@ class MaceEnergyForceTask(BaseTaskModule):
             losses[key] = self.loss_func(predictions[key], target_val) * (
                 coefficient / predictions[key].numel()
             )
-
         total_loss: torch.Tensor = sum(losses.values())
         return {"loss": total_loss, "log": losses}
 
@@ -1475,7 +1470,7 @@ class MaceEnergyForceTask(BaseTaskModule):
             metrics[f"val_{key}"] = value
         try:
             batch_size = self.encoder.read_batch_size(batch)
-        except:
+        except:  # noqa: E722
             warn(
                 "Unable to parse batch size from data, defaulting to `None` for logging."
             )
@@ -1496,7 +1491,7 @@ class MaceEnergyForceTask(BaseTaskModule):
             metrics[f"test_{key}"] = value
         try:
             batch_size = self.encoder.read_batch_size(batch)
-        except:
+        except:  # noqa: E722
             warn(
                 "Unable to parse batch size from data, defaulting to `None` for logging."
             )
@@ -1635,6 +1630,7 @@ class ForceRegressionTask(BaseTaskModule):
         loss_func: type[nn.Module] | nn.Module = nn.L1Loss,
         task_keys: list[str] | None = None,
         output_kwargs: dict[str, Any] = {},
+        embedding_reduction_type: str = "sum",
         **kwargs,
     ) -> None:
         super().__init__(
@@ -1644,6 +1640,7 @@ class ForceRegressionTask(BaseTaskModule):
             loss_func,
             task_keys,
             output_kwargs,
+            embedding_reduction_type=embedding_reduction_type,
             **kwargs,
         )
         self.save_hyperparameters(ignore=["encoder", "loss_func"])
@@ -1677,6 +1674,7 @@ class ForceRegressionTask(BaseTaskModule):
                     fa_rot = getattr(graph, "fa_rot", None)
                     fa_pos = getattr(graph, "fa_pos", None)
             else:
+                graph = None
                 # assume point cloud otherwise
                 pos: torch.Tensor = batch.get("pos")
                 # no frame averaging architecture yet for point clouds
@@ -1703,7 +1701,9 @@ class ForceRegressionTask(BaseTaskModule):
             else:
                 embeddings = self.encoder(batch)
             natoms = batch.get("natoms", None)
-            outputs = self.process_embedding(embeddings, pos, fa_rot, fa_pos, natoms)
+            outputs = self.process_embedding(
+                embeddings, pos, fa_rot, fa_pos, natoms, graph
+            )
         return outputs
 
     def process_embedding(
@@ -1713,11 +1713,47 @@ class ForceRegressionTask(BaseTaskModule):
         fa_rot: None | torch.Tensor = None,
         fa_pos: None | torch.Tensor = None,
         natoms: None | torch.Tensor = None,
+        graph: None | AbstractGraph = None,
     ) -> dict[str, torch.Tensor]:
         outputs = {}
+        # compute node-level contributions to the energy
+        node_energies = self.output_heads["energy"](embeddings.point_embedding)
+        # figure out how we're going to reduce node level energies
+        # depending on the representation and/or the graph framework
+        if graph is not None:
+            if isinstance(graph, dgl.DGLGraph):
+                graph.ndata["node_energies"] = node_energies
 
-        def energy_and_force(pos, system_embedding):
-            energy = self.output_heads["energy"](system_embedding)
+                def readout(node_energies: torch.Tensor):
+                    return dgl.readout_nodes(
+                        graph, "node_energies", op=self.embedding_reduction_type
+                    )
+            else:
+                # assumes a batched pyg graph
+                batch = graph.batch
+                from torch_geometric.utils import scatter
+
+                def readout(node_energies: torch.Tensor):
+                    return scatter(
+                        node_energies,
+                        batch,
+                        dim=-2,
+                        reduce=self.embedding_reduction_type,
+                    )
+        else:
+
+            def readout(node_energies: torch.Tensor):
+                return reduce(
+                    node_energies, "b ... d -> b ()", self.embedding_reduction_type
+                )
+
+        def energy_and_force(
+            pos: torch.Tensor, node_energies: torch.Tensor, readout: Callable
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            # we sum over points and keep dimension as 1
+            energy = readout(node_energies)
+            if energy.ndim == 1:
+                energy.unsqueeze(-1)
             # now use autograd for force calculation
             force = (
                 -1
@@ -1730,17 +1766,19 @@ class ForceRegressionTask(BaseTaskModule):
             )
             return energy, force
 
+        # not using frame averaging
         if fa_pos is None:
-            energy, force = energy_and_force(pos, embeddings.system_embedding)
+            energy, force = energy_and_force(pos, node_energies, readout)
         else:
             energy = []
             force = []
             for idx, pos in enumerate(fa_pos):
-                frame_embedding = embeddings.system_embedding[:, idx, :]
-                frame_energy, frame_force = energy_and_force(pos, frame_embedding)
+                frame_embedding = node_energies[:, idx, :]
+                frame_energy, frame_force = energy_and_force(
+                    pos, frame_embedding, readout
+                )
                 force.append(frame_force)
                 energy.append(frame_energy)
-            # force = torch.stack(force, axis=0)
 
         # check to see if we are frame averaging
         if fa_rot is not None:
@@ -1767,12 +1805,17 @@ class ForceRegressionTask(BaseTaskModule):
             self.embedding_reduction_type,
             d=3,
         )
+        # this may not do anything if we aren't frame averaging
+        # since the reduction is also done in the energy_and_force call
         outputs["energy"] = reduce(
             energy,
             "b ... d -> b d",
             self.embedding_reduction_type,
             d=1,
         )
+        # this ensures that we get a scalar value for every node
+        # representing the energy contribution
+        outputs["node_energies"] = node_energies
         return outputs
 
     def _get_targets(
@@ -1888,7 +1931,7 @@ class ForceRegressionTask(BaseTaskModule):
             metrics[f"train_{key}"] = value
         try:
             batch_size = self.encoder.read_batch_size(batch)
-        except:
+        except:  # noqa: E722
             warn(
                 "Unable to parse batch size from data, defaulting to `None` for logging.",
             )
@@ -2990,8 +3033,9 @@ class OpenCatalystInference(ABC, pl.LightningModule):
         self._raise_inference_error()
 
     @abstractmethod
-    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0) -> Any:
-        ...
+    def predict_step(
+        self, batch: Any, batch_idx: int, dataloader_idx: int = 0
+    ) -> Any: ...
 
 
 @registry.register_task("IS2REInference")
@@ -3073,3 +3117,150 @@ class S2EFInference(OpenCatalystInference):
     ) -> None:
         # reset gradients to ensure no contamination between batches
         self.zero_grad(set_to_none=True)
+
+
+class NodeDenoisingTask(BaseTaskModule):
+    __task__ = "pretraining"
+    """
+    This implements a node position denoising task, as described by Zaidi _et al._,
+    ICLR 2023.
+
+    This task is paired with the `NoisyPositions` pretraining data transform,
+    which generates the noise. A single output head is used to predict the noise
+    for every atom, using the MSE between the predicted and actual noise as the
+    loss function.
+    """
+
+    def __init__(
+        self,
+        encoder: nn.Module | None = None,
+        encoder_class: type[nn.Module] | None = None,
+        encoder_kwargs: dict[str, Any] | None = None,
+        loss_func: type[nn.Module] | nn.Module | None = None,
+        task_keys: list[str] | None = None,
+        output_kwargs: dict[str, Any] = {},
+        lr: float = 0.0001,
+        weight_decay: float = 0,
+        embedding_reduction_type: str = "mean",
+        normalize_kwargs: dict[str, float] | None = None,
+        scheduler_kwargs: dict[str, dict[str, Any]] | None = None,
+        **kwargs,
+    ) -> None:
+        if task_keys is not None:
+            warn("Task keys were passed to NodeDenoisingTask, but is not used.")
+        task_keys = ["denoise"]
+        super().__init__(
+            encoder,
+            encoder_class,
+            encoder_kwargs,
+            loss_func,
+            task_keys,
+            output_kwargs,
+            lr,
+            weight_decay,
+            embedding_reduction_type,
+            normalize_kwargs,
+            scheduler_kwargs,
+            **kwargs,
+        )
+        self.loss_func = nn.MSELoss()
+
+    def _make_output_heads(self) -> nn.ModuleDict:
+        # make a single output head for noise prediction applied to nodes
+        denoise = OutputHead(3, **self.output_kwargs).to(self.device)
+        return nn.ModuleDict({"denoise": denoise})
+
+    def _filter_task_keys(
+        self,
+        keys: list[str],
+        batch: dict[str, torch.Tensor | dgl.DGLGraph | dict[str, torch.Tensor]],
+    ) -> list[str]:
+        """
+        For the denoising task, we will only ever target the "denoise" key.
+
+        Parameters
+        ----------
+        keys : List[str]
+            List of task keys
+        batch : Dict[str, Union[torch.Tensor, dgl.DGLGraph, Dict[str, torch.Tensor]]]
+            Batch of training samples to inspect.
+
+        Returns
+        -------
+        List[str]
+            List of filtered task keys
+        """
+        return ["denoise"]
+
+    def process_embedding(self, embeddings: Embeddings) -> dict[str, torch.Tensor]:
+        """
+        Override the base process embedding method, since we are assumed to only
+        have a single output head and we need to use the point/node-level embeddings.
+
+        Parameters
+        ----------
+        embeddings : Embeddings
+            Embeddings data structure containing graph and node-level embeddings.
+
+        Returns
+        -------
+        dict[str, torch.Tensor]
+            Dictionary with a single 'denoise' key, corresponding to the
+            predicted noise.
+        """
+        head = self.output_heads["denoise"]
+        # prediction node noise
+        pred_noise = head(embeddings.point_embedding)
+        return {"denoise": pred_noise}
+
+    def forward(
+        self,
+        batch: BatchDict,
+    ) -> dict[str, torch.Tensor]:
+        """
+        Modified forward call for denoising positions.
+
+        The goal of this task is to predict noise, given noisy coordinates,
+        and for this to happen we substitute the noise-free positions temporarily
+        for the noisy ones to prevent interference with other tasks.
+
+        Parameters
+        ----------
+        batch : BatchDict
+            Batch of data samples
+
+        Returns
+        -------
+        dict[str, torch.Tensor]
+            Dictionary output from ``process_embedding``
+
+        Raises
+        ------
+        KeyError:
+            Raises a ``KeyError`` ff the noisy positions are not found
+            in either the graph or point cloud dictionary.
+        """
+        if "graph" in batch:
+            graph = batch["graph"]
+            if hasattr(graph, "ndata"):
+                target = graph.ndata
+            else:
+                target = graph
+        else:
+            target = batch
+        if "noisy_pos" not in target:
+            raise KeyError(
+                "'noisy_pos' was not found in data structure, please add the"
+                " NoisyPositions pretraining transform, and/or check that"
+                " 'noisy_pos' is included in the graph transform ``node_keys``."
+            )
+        temp_pos = target["pos"].clone().detach()
+        # swap out positions for the noisy ones
+        target["pos"] = target["noisy_pos"]
+        if "embeddings" in batch:
+            embedding = batch.get("embeddings")
+        else:
+            embedding = self.encoder(batch)
+        outputs = self.process_embedding(embedding)
+        target["pos"] = temp_pos
+        return outputs

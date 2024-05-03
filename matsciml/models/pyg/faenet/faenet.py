@@ -2,6 +2,7 @@
 FAENet: Frame Averaging Equivariant graph neural Network
 Simple, scalable and expressive model for property prediction on 3D atomic systems.
 """
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -356,7 +357,6 @@ class FAENet(AbstractPyGModel):
         """
         preproc = False
         data = graph
-
         # produce final embeddings after going through model
         embeddings = self.energy_forward(data, preproc)
         return embeddings
