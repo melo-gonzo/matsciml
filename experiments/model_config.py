@@ -56,9 +56,9 @@ available_models = {
     "faenet": {
         "encoder_class": FAENet,
         "encoder_kwargs": {
-            "act": 'swish',
+            "act": 'silu',
             "cutoff": 6.0,
-            "average_frame_embeddings": True,
+            "average_frame_embeddings": False,
             "pred_as_dict": False,
             "hidden_dim": 128,
             "out_dim": 128,
