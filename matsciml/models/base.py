@@ -702,7 +702,7 @@ class BaseTaskModule(pl.LightningModule):
             if kwargs["task_loss_scaling"] is not None:
                 self.task_loss_scaling = kwargs["task_loss_scaling"]
         else:
-            self.task_loss_scaling = dict(zip(task_keys, [1] * len(task_keys)))
+            self.task_loss_scaling = None
         self.embedding_reduction_type = embedding_reduction_type
         self.save_hyperparameters(ignore=["encoder", "loss_func"])
         accuracy_func = kwargs.get("accuracy_func", None)
@@ -1011,7 +1011,8 @@ class BaseTaskModule(pl.LightningModule):
                 f1s[f"{key}_10"] = self.f1_10(preds, target_val)
 
             loss = self.loss_func(predictions[key], target_val)
-            loss = loss * self.task_loss_scaling[key]
+            if self.task_loss_scaling is not None:
+                loss = loss * self.task_loss_scaling[key]
             losses[key] = loss
 
         total_loss: torch.Tensor = sum(losses.values())
