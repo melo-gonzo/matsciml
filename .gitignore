@@ -5,12 +5,15 @@ results
 logs
 *.traj
 experimental
-lightning_logsc
+lightning_logs
 debug_scripts
 experiments-2024-logs
 launch_scripts
 debug.py
 ip_address.txt
+*error_log.txt
+*.ckpt
+examples.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
