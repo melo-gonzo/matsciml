@@ -181,6 +181,7 @@ class BaseLMDBDataset(Dataset):
                         data = transform(data)
                     except Exception:
                         import traceback
+
                         with open("transform_fail.txt", "w") as f:
                             f.write(str(keys))
                         print(traceback.format_exc())
@@ -262,13 +263,11 @@ class BaseLMDBDataset(Dataset):
         self._representation = value
 
     @property
-    def pad_keys(self) -> list[str]:
-        ...
+    def pad_keys(self) -> list[str]: ...
 
     @pad_keys.setter
     @abstractmethod
-    def pad_keys(self, keys: list[str]) -> None:
-        ...
+    def pad_keys(self, keys: list[str]) -> None: ...
 
     @classmethod
     def from_devset(cls, transforms: list[Callable] | None = None, **kwargs):
@@ -364,4 +363,4 @@ class PointCloudDataset(BaseLMDBDataset):
             dst_indices = torch.randperm(size)[:num_neighbors].sort().values
         else:
             dst_indices = src_indices
-        return {"src_nodes": src_indices, "dst_nodes": dst_indices}
+        return {"pc_src_nodes": src_indices, "pc_dst_nodes": dst_indices}
