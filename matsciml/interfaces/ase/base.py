@@ -16,6 +16,7 @@ from matsciml.models.base import (
     MultiTaskLitModule,
 )
 from matsciml.datasets.transforms.base import AbstractDataTransform
+from matsciml.models.utils.io import *
 
 __all__ = ["MatSciMLCalculator"]
 
@@ -279,4 +280,12 @@ class MatSciMLCalculator(Calculator):
     ) -> MatSciMLCalculator:
         ckpt_path = __checkpoint_conversion_exist_check(ckpt_path)
         task = ScalarRegressionTask.load_from_checkpoint(ckpt_path)
+        return cls(task, *args, **kwargs)
+
+    @classmethod
+    def from_pretrained_multi_task(
+        cls, ckpt_path: str | Path, *args, **kwargs
+    ) -> MatSciMLCalculator:
+        ckpt_path = _checkpoint_conversion_exist_check(ckpt_path)
+        task = multitask_from_checkpoint(ckpt_path)
         return cls(task, *args, **kwargs)
