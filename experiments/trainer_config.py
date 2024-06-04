@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 from data_config import available_data
 from model_config import available_models
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from matsciml.lightning import callbacks as cb
 
@@ -41,8 +41,16 @@ trainer_config = {
 
 
 def setup_callbacks(opt_target, log_path):
+    es = EarlyStopping(
+        patience=5,
+        monitor=opt_target,
+        mode="min",
+        verbose=True,
+        check_finite=False,
+    )
     callbacks = [
         ModelCheckpoint(monitor=opt_target, save_top_k=5),
+        es,
         cb.Timer(),
         cb.GradientCheckCallback(),
         cb.SAM(),
@@ -130,12 +138,14 @@ def setup_task(args):
         task_args.update({"normalize_kwargs": normalize_kwargs})
         if task_loss_scaling is not None:
             loss_scaling = {}
-            for k in task_args['task_keys']:
+            for k in task_args["task_keys"]:
                 if k not in task_loss_scaling:
-                    print(f"\nTask key {k} does not have a loss scaling factor. Defaulting to 1.\n")
+                    print(
+                        f"\nTask key {k} does not have a loss scaling factor. Defaulting to 1.\n"
+                    )
                     loss_scaling[k] = 1
                 else:
-                    loss_scaling[k] =  task_loss_scaling[k]
+                    loss_scaling[k] = task_loss_scaling[k]
             task_args.update({"task_loss_scaling": loss_scaling})
         task = task(**task_args)
         tasks.append(task)
