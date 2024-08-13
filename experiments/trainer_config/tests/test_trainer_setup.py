@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import pytest
 import tempfile
 
-from pytorch_lightning.loggers import CSVLogger
+import pytest
 from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.loggers import CSVLogger
 
 from experiments.trainer_config import setup_trainer
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from copy import deepcopy
+from pathlib import Path
+
 import pytest
 
-from copy import deepcopy
-from experiments.utils.utils import instantiate_arg_dict
-
-from experiments.utils.configurator import configurator
 import experiments
-from pathlib import Path
+from experiments.utils.configurator import configurator
+from experiments.utils.utils import instantiate_arg_dict
 
 base_path = Path(experiments.__file__).parent
 model_path = base_path.joinpath("configs", "models")

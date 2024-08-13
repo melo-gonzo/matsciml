@@ -4,7 +4,6 @@ from copy import deepcopy
 from typing import Any
 
 import pytorch_lightning as pl
-
 from matsciml.common.registry import registry
 from matsciml.models.base import MultiTaskLitModule
 

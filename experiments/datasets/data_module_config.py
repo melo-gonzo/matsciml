@@ -1,17 +1,12 @@
 from __future__ import annotations
 
+import sys
 from copy import deepcopy
 from typing import Any
-import sys
 
 import pytorch_lightning as pl
-
-from matsciml.lightning.data_utils import (
-    MatSciMLDataModule,
-)
 from matsciml.datasets import *  # noqa: F401
-
-from matsciml.lightning.data_utils import MultiDataModule
+from matsciml.lightning.data_utils import MatSciMLDataModule, MultiDataModule
 
 from experiments.utils.configurator import configurator
 from experiments.utils.utils import instantiate_arg_dict, update_arg_dict

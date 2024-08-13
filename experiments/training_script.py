@@ -1,15 +1,15 @@
 import os
-import yaml
-from typing import Any
+from argparse import ArgumentParser
 from pathlib import Path
+from typing import Any
+
+import yaml
+
 from experiments.datasets.data_module_config import setup_datamodule
 from experiments.task_config.task_config import setup_task
 from experiments.trainer_config.trainer_config import setup_trainer
-
-from experiments.utils.utils import setup_log_dir, config_help
 from experiments.utils.configurator import configurator
-
-from argparse import ArgumentParser
+from experiments.utils.utils import config_help, setup_log_dir
 
 
 def main(config: dict[str, Any]) -> None:

@@ -266,10 +266,17 @@ class MatSciMLCalculator(Calculator):
                 self.results["stress"] = self._compute_virial_stress(
                     self.results["forces"], atoms.get_positions(), atoms.get_volume()
                 )
-            # if "stress" in output:
-            #     self.results["stress"] = output["stress"].detach().numpy()
-            # if "dipole" in output:
-            #     self.results["dipole"] = output["dipole"].detach().numpy()
+            if "forces" in output:
+                self.results["forces"] = output["forces"].detach().numpy()
+                self.results["stress"] = self._compute_virial_stress(
+                    self.results["forces"], atoms.get_positions(), atoms.get_volume()
+                )
+            if "stress" in output:
+                if output["stress"] is not None:
+                    self.results["stress"] = output["stress"].detach().numpy()
+            if "dipole" in output:
+                if output["dipole"] is not None:
+                    self.results["dipole"] = output["dipole"].detach().numpy()
             if len(self.results) == 0:
                 raise RuntimeError(
                     f"No expected properties were written. Output dict: {output}"

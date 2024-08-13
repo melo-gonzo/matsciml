@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-
-import pytest
+from pathlib import Path
 
 import matsciml
-import experiments
 import matsciml.datasets.transforms  # noqa: F401
+import pytest
+
+import experiments
 from experiments.datasets.data_module_config import setup_datamodule
 from experiments.utils.configurator import configurator
-from pathlib import Path
 
 base_path = Path(experiments.__file__).parent
 model_path = base_path.joinpath("configs", "models")

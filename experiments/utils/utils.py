@@ -1,5 +1,5 @@
-from typing import Any, Union
 import os
+from typing import Any, Union
 
 import matsciml  # noqa: F401
 from matsciml.models.common import get_class_from_name

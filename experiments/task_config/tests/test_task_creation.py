@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-from typing import Any
-
-import pytest
-from experiments.task_config.task_config import (
-    setup_task,
-)
-from experiments.utils.utils import instantiate_arg_dict
-
 from copy import deepcopy
+from typing import Any
 
 import matsciml
 import matsciml.datasets.transforms  # noqa: F401
+import pytest
+
+from experiments.task_config.task_config import setup_task
+from experiments.utils.utils import instantiate_arg_dict
 
 single_task = {
     "model": "egnn_dgl",
