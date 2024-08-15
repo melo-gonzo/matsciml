@@ -57,6 +57,7 @@ if __name__ == "__main__":
 
     # python mp_test_runner.py -c matsciml -m mace_pyg -p 2023-12-10-mace-128-L0_epoch-199.model
     # python mp_test_runner.py -c matsciml -m egnn_dgl -p ../experiment_logs/egnn_dgl_lips/version_4/lightning_logs/version_0/checkpoints/epoch=13-step=3836.ckpt
+    # python mp_test_runner.py -c matsciml -m chgnet_dgl -p /store/code/ai4science/matgl/pretrained_models/CHGNet-MPtrj-2024.2.13-PES-11M/model.pt
 
     # python kusp_server.py --model egnn_dgl --checkpoint ../experiment_logs/egnn_dgl_lips/version_4/lightning_logs/version_0/checkpoints/epoch=13-step=3836.ckpt
 
