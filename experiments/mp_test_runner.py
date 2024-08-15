@@ -56,7 +56,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # python mp_test_runner.py -c matsciml -m mace_pyg -p 2023-12-10-mace-128-L0_epoch-199.model
-    # python mp_test_runner.py -c mp -m egnn_dgl -p ../experiment_logs/egnn_dgl_lips/version_4/lightning_logs/version_0/checkpoints/epoch=13-step=3836.ckpt
+    # python mp_test_runner.py -c matsciml -m egnn_dgl -p ../experiment_logs/egnn_dgl_lips/version_4/lightning_logs/version_0/checkpoints/epoch=13-step=3836.ckpt
 
     # python kusp_server.py --model egnn_dgl --checkpoint ../experiment_logs/egnn_dgl_lips/version_4/lightning_logs/version_0/checkpoints/epoch=13-step=3836.ckpt
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                 args.checkpoint, transforms=model_args["transforms"]
             )
         else:
-            from experiments.pretrained_mace import calc
+            from experiments.models.pretrained_mace import calc
 
     if args.calculator == "mp":
         if "mace" not in args.model:
@@ -91,14 +91,14 @@ if __name__ == "__main__":
                 args.checkpoint,
             )
         else:
-            from experiments.pretrained_mace import model
+            from experiments.models.pretrained_mace import model
         calc = calc(model, transforms=transforms)
 
     if args.calculator == "kusp":
         subprocess.Popen(
             [
                 "python",
-                "kusp_server.py",
+                "./kusp/kusp_server.py",
                 "--model",
                 args.model,
                 "--checkpoint",
@@ -116,6 +116,8 @@ test.mp_tests(
     n_calcs=args.n_calcs,
     ignore_relax=True,
     method="stress-condensed-fast",
+    only_force=True,
+    ftol=0.001,
     # optimize=True,
     # only_optimize=True,
 )
