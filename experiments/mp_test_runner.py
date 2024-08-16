@@ -11,6 +11,7 @@ from matsciml.interfaces.ase import MatSciMLCalculator
 from mp_tests.calculator import MatSciMLCalculator as MPTestsCalculator
 from mp_tests.utils import mp_species
 
+
 from experiments.utils.configurator import configurator
 from experiments.utils.utils import _get_next_version, instantiate_arg_dict
 
@@ -77,7 +78,14 @@ if __name__ == "__main__":
     calc = get_calculator(args.calculator)
 
     if args.calculator == "matsciml" and args.task == "ForceRegressionTask":
-        if "mace" not in args.model:
+        if args.model in ["chgnet_dgl"]:
+            from models.matgl_pretrained import load_chgnet
+
+            model = load_chgnet(args.checkpoint, model_args)
+            calc = MatSciMLCalculator(
+                model, transforms=model_args["transforms"], from_matsciml=False
+            )
+        elif "mace" not in args.model:
             calc = calc.from_pretrained_force_regression(
                 args.checkpoint, transforms=model_args["transforms"]
             )

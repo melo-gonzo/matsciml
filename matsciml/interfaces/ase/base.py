@@ -97,6 +97,7 @@ class MatSciMLCalculator(Calculator):
         directory=".",
         conversion_factor: float | dict[str, float] = 1.0,
         multitask_strategy: str | Callable | mt.AbstractStrategy = "AverageTasks",
+        from_matsciml: bool = True,
         **kwargs,
     ):
         """
@@ -151,29 +152,30 @@ class MatSciMLCalculator(Calculator):
         super().__init__(
             restart, label=label, atoms=atoms, directory=directory, **kwargs
         )
-        assert isinstance(
-            task_module,
-            (
-                ForceRegressionTask,
-                ScalarRegressionTask,
-                GradFreeForceRegressionTask,
-                MultiTaskLitModule,
-            ),
-        ), f"Expected task to be one that is capable of energy/force prediction. Got {task_module.__type__}."
-        if isinstance(task_module, MultiTaskLitModule):
-            assert any(
-                [
-                    isinstance(
-                        subtask,
-                        (
-                            ForceRegressionTask,
-                            ScalarRegressionTask,
-                            GradFreeForceRegressionTask,
-                        ),
-                    )
-                    for subtask in task_module.task_list
-                ]
-            ), "Expected at least one subtask to be energy/force predictor."
+        if from_matsciml:
+            assert isinstance(
+                task_module,
+                (
+                    ForceRegressionTask,
+                    ScalarRegressionTask,
+                    GradFreeForceRegressionTask,
+                    MultiTaskLitModule,
+                ),
+            ), f"Expected task to be one that is capable of energy/force prediction. Got {task_module.__type__}."
+            if isinstance(task_module, MultiTaskLitModule):
+                assert any(
+                    [
+                        isinstance(
+                            subtask,
+                            (
+                                ForceRegressionTask,
+                                ScalarRegressionTask,
+                                GradFreeForceRegressionTask,
+                            ),
+                        )
+                        for subtask in task_module.task_list
+                    ]
+                ), "Expected at least one subtask to be energy/force predictor."
         self.task_module = task_module
         self.transforms = transforms
         self.conversion_factor = conversion_factor
@@ -203,7 +205,10 @@ class MatSciMLCalculator(Calculator):
 
     @property
     def dtype(self) -> torch.dtype | str:
-        dtype = self.task_module.dtype
+        try:
+            dtype = self.task_module.dtype
+        except Exception:
+            dtype = torch.float32
         return dtype
 
     def _format_atoms(self, atoms: Atoms) -> DataDict:
@@ -215,6 +220,7 @@ class MatSciMLCalculator(Calculator):
         data_dict["pos"] = pos
         data_dict["atomic_numbers"] = atomic_numbers
         data_dict["cell"] = cell
+        data_dict["frac_coords"] = torch.from_numpy(atoms.get_scaled_positions())
         return data_dict
 
     def _format_pipeline(self, atoms: Atoms) -> DataDict:
