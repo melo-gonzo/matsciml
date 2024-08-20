@@ -20,4 +20,5 @@ transforms:
       node_keys:
         - "pos"
         - "atomic_numbers"
+        - "frac_coords"
   - class_path: matsciml.datasets.transforms.MGLDataTransform

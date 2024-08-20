@@ -30,12 +30,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--calculator", default="matsciml")
     parser.add_argument("-m", "--model", default=None)
-    parser.add_argument("-p", "--checkpoint", default=None)
+    parser.add_argument("-p", "--checkpoint", default=None, type=str)
     parser.add_argument("-t", "--task", default="ForceRegressionTask")
     parser.add_argument("-s", "--test", default="Elasticity")
-    parser.add_argument("-j", "--job-n", default=0)
-    parser.add_argument("-n", "--n-calcs", default=10_733)
-    parser.add_argument("-i", "--it", default=10_000)
+    parser.add_argument("-j", "--job-n", default=0, type=int)
+    parser.add_argument("-n", "--n-calcs", default=10_733, type=int)
+    parser.add_argument("-i", "--it", default=1_000, type=int)
+    parser.add_argument("-e", "--extra_logger_name", default=None)
     parser.add_argument(
         "--dataset_config",
         type=Path,
@@ -59,29 +60,54 @@ if __name__ == "__main__":
     # python mp_test_runner.py -c matsciml -m mace_pyg -p 2023-12-10-mace-128-L0_epoch-199.model
     # python mp_test_runner.py -c matsciml -m egnn_dgl -p ../experiment_logs/egnn_dgl_lips/version_4/lightning_logs/version_0/checkpoints/epoch=13-step=3836.ckpt
     # python mp_test_runner.py -c matsciml -m chgnet_dgl -p /store/code/ai4science/matgl/pretrained_models/CHGNet-MPtrj-2024.2.13-PES-11M/model.pt
-
+    # python mp_test_runner.py -c matsciml -m m3gnet_dgl -p /store/code/ai4science/matgl/pretrained_models/M3GNet-MP-2021.2.8-PES/model.pt
     # python kusp_server.py --model egnn_dgl --checkpoint ../experiment_logs/egnn_dgl_lips/version_4/lightning_logs/version_0/checkpoints/epoch=13-step=3836.ckpt
+
+    # python mp_test_runner.py --calculator matsciml --model mace_pyg --checkpoint 2023-12-10-mace-128-L0_epoch-199.model --job-n '0' --n_calcs '215'
 
     configurator.configure_models(args.model_config)
     configurator.configure_datasets(args.dataset_config)
     configurator.configure_trainer(args.trainer_config)
-
-    log_dir_base = Path(*["calculator_results", args.calculator, args.test, args.model])
+    if args.extra_logger_name is not None:
+        log_dir_base = Path(
+            *[
+                "calculator_results",
+                args.calculator,
+                args.extra_logger_name,
+                args.test,
+                args.model,
+                f"job_n-{args.job_n}",
+            ]
+        )
+    else:
+        log_dir_base = Path(
+            *[
+                "calculator_results",
+                args.calculator,
+                args.test,
+                args.model,
+                args.job_n,
+            ]
+        )
     log_dir = log_dir_base.joinpath(_get_next_version(log_dir_base))
     log_dir.mkdir(parents=True, exist_ok=True)
 
     db_name = log_dir.joinpath("mp_tests.json")
     with open(log_dir.joinpath("cli_args.yaml"), "w") as f:
+        command = "python mp_test_runner.py " + " ".join(
+            f"--{k} {v}" for k, v in vars(args).items()
+        )
+        args.command = command
         yaml.safe_dump({k: str(v) for k, v in args.__dict__.items()}, f, indent=2)
 
     model_args = instantiate_arg_dict(deepcopy(configurator.models[args.model]))
     calc = get_calculator(args.calculator)
 
     if args.calculator == "matsciml" and args.task == "ForceRegressionTask":
-        if args.model in ["chgnet_dgl"]:
-            from models.matgl_pretrained import load_chgnet
+        if args.model in ["chgnet_dgl", "m3gnet_dgl"]:
+            from models.matgl_pretrained import load_matgl
 
-            model = load_chgnet(args.checkpoint, model_args)
+            model = load_matgl(args.checkpoint, model_args)
             calc = MatSciMLCalculator(
                 model, transforms=model_args["transforms"], from_matsciml=False
             )
@@ -119,40 +145,19 @@ if __name__ == "__main__":
     test = getattr(mp_tests, args.test)
     test = test(calc, supported_species=mp_species, db_name=db_name)
 
-test.mp_tests(
-    it=args.it,
-    job_n=args.job_n,
-    n_calcs=args.n_calcs,
-    ignore_relax=True,
-    method="stress-condensed-fast",
-    only_force=True,
-    ftol=0.001,
-    # optimize=True,
-    # only_optimize=True,
-)
+    try:
+        test.mp_tests(
+            it=args.it,
+            job_n=args.job_n,
+            n_calcs=args.n_calcs,
+            ignore_relax=True,
+            method="stress-condensed-fast",
+            only_force=True,
+            ftol=0.001,
+        )
+    except Exception:
+        import traceback
 
-
-# import multiprocessing
-# from multiprocessing import Pool
-
-
-# def run_tests(job_n_list):
-#     db_name = log_dir.joinpath(f"mp_tests_{job_n_list}.json")
-#     test = getattr(mp_tests, args.test)
-#     test = test(calc, supported_species=mp_species, db_name=db_name)
-#     test.mp_tests(
-#         it=args.it,
-#         job_n=job_n_list,
-#         n_calcs=args.n_calcs,
-#         ignore_relax=True,
-#         method="energy-condensed",
-#         optimize=True,
-#         only_optimize=True,
-#     )
-
-
-# n_cpu = min(os.cpu_count() - 1, 16)
-# args.n_calcs = 10_733 // n_cpu
-
-# pool = Pool(n_cpu)
-# pool.map(run_tests, list(range(n_cpu)))
+        with open(log_dir.joinpath("error.txt"), "w") as f:
+            f.write("\n" + str(traceback.format_exc()))
+            print(traceback.format_exc())

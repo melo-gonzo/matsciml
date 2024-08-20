@@ -55,6 +55,7 @@ class MACEWrapper(AbstractPyGModel):
         embedding_kwargs: Any = None,
         encoder_only: bool = True,
         readout_method: str | Callable = "add",
+        atomic_numbers={},
         **mace_kwargs,
     ) -> None:
         if embedding_kwargs is not None:
@@ -110,6 +111,8 @@ class MACEWrapper(AbstractPyGModel):
                 )
             readout_method = readout_type
         self.readout = readout_method
+        atomic_numbers.sort()
+        self.atomic_number_map = dict(zip(atomic_numbers, range(len(atomic_numbers))))
         self.save_hyperparameters()
 
     @property
@@ -141,7 +144,10 @@ class MACEWrapper(AbstractPyGModel):
         # expect a PyG graph already
         graph = batch["graph"]
         atomic_numbers = graph.atomic_numbers
-        one_hot_atoms = self.atomic_numbers_to_one_hot(atomic_numbers)
+        atomic_numbers = torch.Tensor(
+            [self.atomic_number_map[num.item()] for num in atomic_numbers]
+        )
+        one_hot_atoms = self.atomic_numbers_to_one_hot(atomic_numbers - 1)
         # check to make sure we have unit cell shifts
         for key in ["cell", "offsets"]:
             if key not in batch:
