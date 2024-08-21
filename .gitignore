@@ -6,9 +6,12 @@ logs
 *.traj
 experimental
 lightning_logs
+
 calculator_results
 experiment_logs
 nequip_example
+mp_k8_yamls
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

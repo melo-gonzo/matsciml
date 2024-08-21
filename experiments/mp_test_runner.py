@@ -35,8 +35,9 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--test", default="Elasticity")
     parser.add_argument("-j", "--job-n", default=0, type=int)
     parser.add_argument("-n", "--n-calcs", default=10_733, type=int)
-    parser.add_argument("-i", "--it", default=1_000, type=int)
+    parser.add_argument("-i", "--it", default=1000, type=int)
     parser.add_argument("-e", "--extra_logger_name", default=None)
+    parser.add_argumenet("-f", "--ftol", default=0.001, type=float)
     parser.add_argument(
         "--dataset_config",
         type=Path,
@@ -153,7 +154,7 @@ if __name__ == "__main__":
             ignore_relax=True,
             method="stress-condensed-fast",
             only_force=True,
-            ftol=0.001,
+            ftol=args.ftol,
         )
     except Exception:
         import traceback
