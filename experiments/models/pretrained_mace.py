@@ -274,7 +274,7 @@ def return_mace_calc():
     model.encoder.encoder.load_state_dict(
         torch.load(ckpt, map_location=torch.device("cpu")).state_dict(), strict=True
     )
-
+    model = model.to(torch.double)
     transforms = [
         PeriodicPropertiesTransform(cutoff_radius=5.0, adaptive_cutoff=True),
         PointCloudToGraphTransform(

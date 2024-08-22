@@ -36,6 +36,7 @@ def forward(
 
 
 def load_matgl(ckpt, model_args):
+    matgl.float_th = torch.float64
     matgl_model = matgl.load_model(Path(ckpt).parent)
     matgl_model.matgl_forward = matgl_model.forward
     matgl_model.forward = MethodType(forward, matgl_model)

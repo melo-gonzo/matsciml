@@ -3,6 +3,7 @@ import subprocess
 import time
 from copy import deepcopy
 from pathlib import Path
+import torch
 
 import matsciml
 import mp_tests
@@ -14,6 +15,9 @@ from mp_tests.utils import mp_species
 
 from experiments.utils.configurator import configurator
 from experiments.utils.utils import _get_next_version, instantiate_arg_dict
+
+
+torch.set_default_dtype(torch.float64)
 
 
 def get_calculator(calc):
@@ -35,9 +39,10 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--test", default="Elasticity")
     parser.add_argument("-j", "--job-n", default=0, type=int)
     parser.add_argument("-n", "--n-calcs", default=10_733, type=int)
-    parser.add_argument("-i", "--it", default=1000, type=int)
-    parser.add_argument("-e", "--extra_logger_name", default=None)
-    parser.add_argumenet("-f", "--ftol", default=0.001, type=float)
+    parser.add_argument("-i", "--it", default=500, type=int)
+    parser.add_argument("-e", "--extra_logger_name", default="debug")
+    parser.add_argument("-f", "--ftol", default=0.001, type=float)
+    parser.add_argument("-k", "--pkl", default=None)
     parser.add_argument(
         "--dataset_config",
         type=Path,
@@ -109,6 +114,7 @@ if __name__ == "__main__":
             from models.matgl_pretrained import load_matgl
 
             model = load_matgl(args.checkpoint, model_args)
+            model = model.to(torch.double)
             calc = MatSciMLCalculator(
                 model, transforms=model_args["transforms"], from_matsciml=False
             )
@@ -126,6 +132,7 @@ if __name__ == "__main__":
             model = model.load_from_checkpoint(
                 args.checkpoint,
             )
+            model = model.to(torch.double)
         else:
             from experiments.models.pretrained_mace import model
         calc = calc(model, transforms=transforms)
@@ -151,6 +158,7 @@ if __name__ == "__main__":
             it=args.it,
             job_n=args.job_n,
             n_calcs=args.n_calcs,
+            pkl=args.pkl,
             ignore_relax=True,
             method="stress-condensed-fast",
             only_force=True,

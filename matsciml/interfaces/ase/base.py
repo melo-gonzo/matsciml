@@ -208,7 +208,7 @@ class MatSciMLCalculator(Calculator):
         try:
             dtype = self.task_module.dtype
         except Exception:
-            dtype = torch.float32
+            dtype = torch.float64
         return dtype
 
     def _format_atoms(self, atoms: Atoms) -> DataDict:
@@ -237,9 +237,10 @@ class MatSciMLCalculator(Calculator):
         # initial formatting to get something akin to dataset outputs
         data_dict = self._format_atoms(atoms)
         # type cast into the type expected by the model
-        data_dict = recursive_type_cast(
-            data_dict, self.dtype, ignore_keys=["atomic_numbers"], convert_numpy=True
-        )
+        # breakpoint()
+        # data_dict = recursive_type_cast(
+        #     data_dict, self.dtype, ignore_keys=["atomic_numbers"], convert_numpy=True
+        # )
         # now run through the same transform pipeline as for datasets
         if self.transforms:
             for transform in self.transforms:
@@ -258,6 +259,9 @@ class MatSciMLCalculator(Calculator):
         data_dict = self._format_pipeline(atoms)
         # run the data structure through the model
         data_dict = concatenate_keys([data_dict])
+        data_dict = recursive_type_cast(
+            data_dict, self.dtype, ignore_keys=["atomic_numbers"], convert_numpy=True
+        )
         output = self.task_module.predict(data_dict)
         if isinstance(self.task_module, MultiTaskLitModule):
             # use a more complicated parser for multitasks
