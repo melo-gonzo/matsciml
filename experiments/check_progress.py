@@ -2,11 +2,15 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-num_jobs = 50
+extra_dir = "chunk1"
+TESTS_PER_FILE = 10  # 215
+num_jobs = 100  # 50
+ENTRIES_PER_MATERIAL = 9  # 7
+
 the_models = [
-    ["mace_pyg", "chgnet_dgl", "m3gnet_dgl"],
-    ["mace_pyg"],
-    ["m3gnet_dgl"],
+    # ["mace_pyg", "chgnet_dgl", "m3gnet_dgl"],
+    # ["mace_pyg"],
+    # ["m3gnet_dgl"],
     ["chgnet_dgl"],
 ]
 for models in the_models:
@@ -19,11 +23,11 @@ for models in the_models:
 
     for model in models:
         for job_n in range(num_jobs):
-            file = f"./calculator_results/matsciml/ai4mat/Elasticity/{model}/job_n-{job_n}/version_0/mp_tests.json"
+            file = f"./calculator_results/matsciml/{extra_dir}/Elasticity/{model}/job_n-{job_n}/version_0/mp_tests.json"
             try:
                 with open(file) as f:
                     data = json.load(f)["_default"]
-                completed = len(data) / 7
+                completed = len(data) / ENTRIES_PER_MATERIAL
                 for k, v in data.items():
                     if "steps" in v:
                         steps.append(int(v["steps"]["computed"]))
@@ -41,7 +45,7 @@ for models in the_models:
     for idx, (model, job) in enumerate(progress.items()):
         completion_percentages = list(job.values())
         plt.hist(
-            np.array(completion_percentages) / 215,
+            np.array(completion_percentages) / TESTS_PER_FILE,
             bins=100,
             alpha=0.75,
             color=colors[idx],
@@ -51,7 +55,7 @@ for models in the_models:
         plt.legend()
         plt.xlabel("Percent Complete")
         plt.ylabel("Number of Jobs")
-        plt.savefig(f"./plots/progress_histogram_{which_models}.png")
+        plt.savefig(f"./plots/{extra_dir}/progress_histogram_{which_models}.png")
 
     plt.figure()
     a = plt.hist(
@@ -66,7 +70,7 @@ for models in the_models:
     counts = a[0]
     counts.sort()
     plt.ylim([0, counts[-2]])
-    plt.savefig(f"./plots/steps_histogram_{which_models}.png")
+    plt.savefig(f"./plots/{extra_dir}/steps_histogram_{which_models}.png")
     plt.close("all")
 
     plt.figure()
@@ -76,7 +80,7 @@ for models in the_models:
     plt.title("CDF of Steps Taken")
     plt.xlabel("Steps Taken")
     plt.ylabel("")
-    plt.savefig(f"./plots/steps_cdf_{which_models}.png")
+    plt.savefig(f"./plots/{extra_dir}/steps_cdf_{which_models}.png")
     plt.close("all")
     print(10 * "\n")
     print(which_models)
@@ -104,7 +108,7 @@ for models in the_models:
     plt.xlabel("Residual Force")
     plt.ylabel("Number of Tests")
     plt.yscale("log")
-    plt.savefig(f"./plots/force_histogram_{which_models}.png")
+    plt.savefig(f"./plots/{extra_dir}/force_histogram_{which_models}.png")
     plt.close("all")
 
     plt.figure()
@@ -114,7 +118,7 @@ for models in the_models:
     plt.title("CDF Residual Force")
     plt.xlabel("Residual Force")
     plt.ylabel("")
-    plt.savefig(f"./plots/force_cdf_{which_models}.png")
+    plt.savefig(f"./plots/{extra_dir}/force_cdf_{which_models}.png")
     plt.close("all")
 
     plt.figure()
@@ -122,5 +126,5 @@ for models in the_models:
     plt.title("When Converge?")
     plt.xlabel("Step")
     plt.ylabel("Force")
-    plt.savefig(f"./plots/force_step_scatter_{which_models}.png")
+    plt.savefig(f"./plots/{extra_dir}/force_step_scatter_{which_models}.png")
     plt.close("all")
