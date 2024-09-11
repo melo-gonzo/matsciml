@@ -221,7 +221,7 @@ class MatSciMLCalculator(Calculator):
         data_dict["atomic_numbers"] = atomic_numbers
         data_dict["cell"] = cell
         data_dict["frac_coords"] = torch.from_numpy(atoms.get_scaled_positions())
-        data_dict["natoms"] = pos.size(1)
+        data_dict["natoms"] = pos.size(0)
         return data_dict
 
     def _format_pipeline(self, atoms: Atoms) -> DataDict:
