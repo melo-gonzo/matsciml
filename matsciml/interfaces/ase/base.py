@@ -236,11 +236,6 @@ class MatSciMLCalculator(Calculator):
         """
         # initial formatting to get something akin to dataset outputs
         data_dict = self._format_atoms(atoms)
-        # type cast into the type expected by the model
-        # breakpoint()
-        # data_dict = recursive_type_cast(
-        #     data_dict, self.dtype, ignore_keys=["atomic_numbers"], convert_numpy=True
-        # )
         # now run through the same transform pipeline as for datasets
         if self.transforms:
             for transform in self.transforms:
@@ -278,12 +273,14 @@ class MatSciMLCalculator(Calculator):
                 )
             if "forces" in output:
                 self.results["forces"] = output["forces"].detach().numpy()
+            if "stress" in output and output["stress"] is not None:
+                self.results["stress"] = output["stress"].detach().numpy()
+            else:
                 self.results["stress"] = self._compute_virial_stress(
-                    self.results["forces"], atoms.get_positions(), atoms.get_volume()
+                    self.results["forces"],
+                    atoms.get_positions(),
+                    atoms.get_volume(),
                 )
-            if "stress" in output:
-                if output["stress"] is not None:
-                    self.results["stress"] = output["stress"].detach().numpy()
             if "dipole" in output:
                 if output["dipole"] is not None:
                     self.results["dipole"] = output["dipole"].detach().numpy()

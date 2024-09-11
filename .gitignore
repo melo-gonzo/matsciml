@@ -12,6 +12,10 @@ experiment_logs
 nequip_example
 mp_k8_yamls
 *.png
+*.json
+*.yaml
+*.sh
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
