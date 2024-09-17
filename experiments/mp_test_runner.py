@@ -1,3 +1,7 @@
+# import sys
+# sys.path.insert(0, "/store/code/ai4science/mp_tests")
+# sys.path.insert(0, "/store/code/ai4science/matsciml")
+
 import argparse
 import subprocess
 import time
